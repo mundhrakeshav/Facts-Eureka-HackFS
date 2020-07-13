@@ -62,6 +62,13 @@ async function createPost (post: JSON) {
     return resp[0]
   }
 
+async function getUserInfo(uid: any){
+    firebase.database().ref('/users').child(uid).once('value').then(snapshot => {
+        const details = snapshot.val()
+        return details
+    })
+}
+
 
 app.get('/generatekeys/:id',(req, res) => {
     let UserId = req.params.id;
@@ -73,9 +80,10 @@ app.post('/addpost/:id', async (req, res) => {
     let post = req.body
     let uid = req.params.id
     const postID = await createPost(post)         //Signing and passing to smart contract pending
-    
+    let userInfo = getUserInfo(uid);              //Address to send to smart contract
     res.send({postID: postID})
 })
+
 
 app.listen(3000, () => {console.log("server running port 3000")})
 

@@ -142,9 +142,19 @@ function createPost(post) {
                     return [4 /*yield*/, client.create(threadId, 'Posts', [post])];
                 case 2:
                     resp = _a.sent();
-                    console.log(resp);
-                    return [2 /*return*/];
+                    return [2 /*return*/, resp[0]];
             }
+        });
+    });
+}
+function getUserInfo(uid) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            firebase.database().ref('/users').child(uid).once('value').then(function (snapshot) {
+                var details = snapshot.val();
+                console.log(details);
+            });
+            return [2 /*return*/];
         });
     });
 }
@@ -153,8 +163,21 @@ app.get('/generatekeys/:id', function (req, res) {
     var resp = createUser(UserId);
     res.send({ result: resp });
 });
-app.post('/addpost/:id', function (req, res) {
-    var post = req.body;
-    createPost(post);
-});
+app.post('/addpost/:id', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var post, uid, postID;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                post = req.body;
+                uid = req.params.id;
+                return [4 /*yield*/, createPost(post)]; //Signing and passing to smart contract pending
+            case 1:
+                postID = _a.sent() //Signing and passing to smart contract pending
+                ;
+                res.send({ postID: postID });
+                return [2 /*return*/];
+        }
+    });
+}); });
+getUserInfo('K4HO1BLGZUYbfc6OG53af7HhZX02');
 app.listen(3000, function () { console.log("server running port 3000"); });
