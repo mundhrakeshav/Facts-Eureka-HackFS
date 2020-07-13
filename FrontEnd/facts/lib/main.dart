@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
     return Provider<AuthBase>(
       create: (context) => Auth(),
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Facts',
         theme: ThemeData.dark().copyWith(),
         home: SafeArea(child: LandingPage()),
       ),

@@ -73,10 +73,10 @@ flutter:
         - asset: assets/Fonts/Playfair/PlayfairDisplay-Bold.ttf
           # weight: 400
         # - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
+    #         style: italic
+    - family: Abel
+      fonts:
+        - asset: assets/Fonts/Abel/Abel-Regular.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #
   # For details regarding fonts from package dependencies,

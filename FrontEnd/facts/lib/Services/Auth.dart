@@ -14,6 +14,9 @@ class User {
 abstract class AuthBase {
   Stream<User> get onAuthStateChanged;
   Future<User> currentUser();
+  Future<User> signInWithEmailPassword({String email, String password});
+  Future<User> createUserWithEmailPassword({String email, String password});
+  Future<bool> resetPassword(String _email);
   Future<void> signOut();
   Future<User> signInWithGoogle();
 }
@@ -71,6 +74,29 @@ class Auth implements AuthBase {
         message: 'error signingIn',
       );
     }
+  }
+
+  @override
+  Future<User> signInWithEmailPassword({String email, String password}) async {
+    final AuthResult authResult = await _firebaseAuth
+        .signInWithEmailAndPassword(email: email, password: password);
+    CurrentUser.user = authResult.user;
+    return _userFromFirebase(authResult.user);
+  }
+
+  @override
+  Future<User> createUserWithEmailPassword(
+      {String email, String password}) async {
+    final AuthResult authResult = await _firebaseAuth
+        .createUserWithEmailAndPassword(email: email, password: password);
+    CurrentUser.user = authResult.user;
+
+    return _userFromFirebase(authResult.user);
+  }
+
+  Future<bool> resetPassword(String _email) async {
+    await _firebaseAuth.sendPasswordResetEmail(email: _email);
+    return true;
   }
 
   @override

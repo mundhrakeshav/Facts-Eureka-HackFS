@@ -37,7 +37,7 @@ class FactDrawer extends StatelessWidget {
               decoration: BoxDecoration(color: Colors.black54),
               margin: EdgeInsets.all(10),
               accountName: Text(
-                CurrentUser.user.displayName,
+                "@" + CurrentUser.user.email.split("@")[0],
                 style: TextStyle(
                     fontFamily: "Roboto",
                     fontWeight: FontWeight.w300,
