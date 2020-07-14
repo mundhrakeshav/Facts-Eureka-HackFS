@@ -1,8 +1,7 @@
 import 'package:facts/Screens/FactDrawer.dart';
-import 'package:facts/Services/Auth.dart';
+import 'package:facts/Screens/PostListItem.dart';
 import 'package:facts/Widgets/AppbarMain.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,7 +14,18 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: appbarMain,
       drawer: FactDrawer(),
-      body: Container(),
+      body: Container(
+        child: ListView.separated(
+          itemBuilder: (context, index) {
+            return PostListItem();
+          },
+          itemCount: 50,
+          separatorBuilder: (context, index) => Divider(
+            thickness: 2,
+          ),
+        ),
+        padding: EdgeInsets.all(10),
+      ),
     );
   }
 }

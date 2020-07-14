@@ -1,3 +1,4 @@
+import 'package:facts/Screens/AddPost.dart';
 import 'package:facts/Services/Auth.dart';
 import 'package:facts/Services/CurrentUser.dart';
 import 'package:flutter/material.dart';
@@ -52,7 +53,27 @@ class FactDrawer extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(child: Container()),
+            ListTile(
+              title: Text(
+                "Add New Post",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: "Roboto",
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18,
+                ),
+              ),
+              onTap: () => {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => AddPost(),
+                ))
+              },
+              trailing: Icon(
+                Icons.edit,
+                color: Colors.white,
+              ),
+            ),
+            Spacer(),
             ListTile(
               title: Text(
                 "Logout",

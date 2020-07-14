@@ -3,7 +3,6 @@ import 'package:facts/Widgets/AppbarMain.dart';
 import 'package:facts/Widgets/SetDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 import 'package:loading_animations/loading_animations.dart';
 import 'package:provider/provider.dart';
 
@@ -143,10 +142,11 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           },
         );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
