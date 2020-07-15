@@ -67,6 +67,7 @@ require("firebase/firestore");
 require("firebase/database");
 var bodyParser = require('body-parser');
 var Web3 = require('web3');
+var axios = require('axios');
 var web3provider = 'https://goerli.infura.io/v3/ee0e744e0cfe471ab09c8ef8efa2b08f';
 var web3 = new Web3(new Web3.providers.HttpProvider(web3provider));
 var threadId = hub_1.ThreadID.fromString('bafkwf6lewg4eaodvqms5feq35lqik4bydfswx3722qz2ltqzy3qopka');
@@ -82,6 +83,11 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
+var ercInstance = axios.create({
+    baseURL: 'https://beta-api.ethvigil.com/v0.1/contract/0x5a91e18c458e21afd7fc2051168484598c59d3e7',
+    timeout: 5000,
+    headers: { 'X-API-KEY': 'c6cde06b-d6d3-4c10-9007-e6f6074c6983' }
+});
 function createUser(uid) {
     return __awaiter(this, void 0, void 0, function () {
         var identityKey, ethAccount;
@@ -98,8 +104,35 @@ function createUser(uid) {
                         publicKey: ethAccount.address,
                         privateKey: ethAccount.privateKey
                     });
-                    return [2 /*return*/, true];
+                    return [2 /*return*/, ethAccount.address];
             }
+        });
+    });
+}
+function signup_mint(wallet_addr) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            ercInstance.post('/mint', {
+                account: wallet_addr,
+                amount: 1000
+            })
+                .then(function (response) {
+                console.log(response.data);
+                return response.data;
+            })
+                .catch(function (error) {
+                if (error.response.data) {
+                    console.log(error.response.data);
+                    if (error.response.data.error == 'unknown contract') {
+                        console.error('You filled in the wrong contract address!');
+                    }
+                }
+                else {
+                    console.log(error.response);
+                }
+                process.exit(0);
+            });
+            return [2 /*return*/];
         });
     });
 }
@@ -152,7 +185,7 @@ function getUserInfo(uid) {
         return __generator(this, function (_a) {
             firebase.database().ref('/users').child(uid).once('value').then(function (snapshot) {
                 var details = snapshot.val();
-                console.log(details);
+                return details;
             });
             return [2 /*return*/];
         });
@@ -160,11 +193,12 @@ function getUserInfo(uid) {
 }
 app.get('/generatekeys/:id', function (req, res) {
     var UserId = req.params.id;
-    var resp = createUser(UserId);
-    res.send({ result: resp });
+    var ethAddress = createUser(UserId);
+    var mintTxHash = signup_mint(ethAddress);
+    res.send({ success: true, ethAddress: ethAddress, signUpHash: mintTxHash });
 });
 app.post('/addpost/:id', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var post, uid, postID;
+    var post, uid, postID, userInfo;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -174,10 +208,10 @@ app.post('/addpost/:id', function (req, res) { return __awaiter(void 0, void 0, 
             case 1:
                 postID = _a.sent() //Signing and passing to smart contract pending
                 ;
+                userInfo = getUserInfo(uid);
                 res.send({ postID: postID });
                 return [2 /*return*/];
         }
     });
 }); });
-getUserInfo('K4HO1BLGZUYbfc6OG53af7HhZX02');
 app.listen(3000, function () { console.log("server running port 3000"); });
