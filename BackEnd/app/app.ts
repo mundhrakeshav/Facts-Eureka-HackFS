@@ -36,6 +36,12 @@ const ercInstance = axios.create({
     headers: {'X-API-KEY': 'c6cde06b-d6d3-4c10-9007-e6f6074c6983'}
 })
 
+const scInstance = axios.create({
+    baseURL: 'https://beta-api.ethvigil.com/v0.1/contract/',
+    timeout: 5000,
+    headers: {'X-API-KEY' : 'c6cde06b-d6d3-4c10-9007-e6f6074c6983'}
+})
+
 async function createUser (uid: any) {
     const identityKey = await generateIdentityKey()
     const ethAccount = await createEthereumAccount()
@@ -91,10 +97,20 @@ async function createPost (post: JSON) {
     return resp[0]
   }
 
+async function pushPostId(id: any, publisherAddress: any) {
+    scInstance.post('/createPost', {
+        _ipfsHash: id,
+        publisher: publisherAddress
+    })
+    .then((response: any) => {
+        return response.data
+    })
+}
+
 async function getUserInfo(uid: any){
     firebase.database().ref('/users').child(uid).once('value').then(snapshot => {
         const details = snapshot.val()
-        return details
+        return details.address
     })
 }
 
@@ -110,8 +126,9 @@ app.post('/addpost/:id', async (req, res) => {
     let post = req.body
     let uid = req.params.id
     const postID = await createPost(post)         //Signing and passing to smart contract pending
-    let userInfo = getUserInfo(uid);              //Address to send to smart contract
-    res.send({postID: postID})
+    let userInfo = await getUserInfo(uid);            //Address to send to smart contract
+    let postTxn = await pushPostId(postID, userInfo)
+    res.send({success: 'true', postTxnID: postTxn})
 })
 
 
