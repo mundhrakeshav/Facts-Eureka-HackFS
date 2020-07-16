@@ -71,26 +71,32 @@ var axios = require('axios');
 var web3provider = 'https://goerli.infura.io/v3/ee0e744e0cfe471ab09c8ef8efa2b08f';
 var web3 = new Web3(new Web3.providers.HttpProvider(web3provider));
 var threadId = hub_1.ThreadID.fromString('bafkwf6lewg4eaodvqms5feq35lqik4bydfswx3722qz2ltqzy3qopka');
-app.use(bodyParser.json());
+//app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 var firebaseConfig = {
-    apiKey: "AIzaSyDYyGjn_9ToO7F1y9QnXzQN8tkHON3xRbM",
-    authDomain: "facts-hackfs.firebaseapp.com",
-    databaseURL: "https://facts-hackfs.firebaseio.com",
-    projectId: "facts-hackfs",
-    storageBucket: "facts-hackfs.appspot.com",
-    messagingSenderId: "638386091930",
-    appId: "1:638386091930:web:313e85db2e47761b362c23"
+    apiKey: "AIzaSyA3PZyMpVFpvKoCX0soSrXEn3GYa4DEAxI",
+    authDomain: "facts-fa7a1.firebaseapp.com",
+    databaseURL: "https://facts-fa7a1.firebaseio.com",
+    projectId: "facts-fa7a1",
+    storageBucket: "facts-fa7a1.appspot.com",
+    messagingSenderId: "788183696859",
+    appId: "1:788183696859:web:7f22a930afd231c17613fe"
 };
 firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 var ercInstance = axios.create({
-    baseURL: 'https://beta-api.ethvigil.com/v0.1/contract/0x5a91e18c458e21afd7fc2051168484598c59d3e7',
+    baseURL: 'https://beta-api.ethvigil.com/v0.1/contract/0xad62722dba0857a2637bffaaade855773ded78f9',
+    timeout: 5000,
+    headers: { 'X-API-KEY': 'c6cde06b-d6d3-4c10-9007-e6f6074c6983' }
+});
+var scInstance = axios.create({
+    baseURL: 'https://beta-api.ethvigil.com/v0.1/contract/0xad62722dba0857a2637bffaaade855773ded78f9',
     timeout: 5000,
     headers: { 'X-API-KEY': 'c6cde06b-d6d3-4c10-9007-e6f6074c6983' }
 });
 function createUser(uid) {
     return __awaiter(this, void 0, void 0, function () {
-        var identityKey, ethAccount;
+        var identityKey, ethAccount, mintTxHash;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, generateIdentityKey()];
@@ -104,7 +110,9 @@ function createUser(uid) {
                         publicKey: ethAccount.address,
                         privateKey: ethAccount.privateKey
                     });
-                    return [2 /*return*/, ethAccount.address];
+                    mintTxHash = signup_mint(ethAccount.address);
+                    console.log(mintTxHash);
+                    return [2 /*return*/];
             }
         });
     });
@@ -118,7 +126,6 @@ function signup_mint(wallet_addr) {
             })
                 .then(function (response) {
                 console.log(response.data);
-                return response.data;
             })
                 .catch(function (error) {
                 if (error.response.data) {
@@ -180,36 +187,82 @@ function createPost(post) {
         });
     });
 }
+function pushPostId(id, publisherAddress) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _this = this;
+        return __generator(this, function (_a) {
+            scInstance.post('/createPost', {
+                _ipfsHash: id,
+                publisher: publisherAddress
+            })
+                .then(function (response) { return __awaiter(_this, void 0, void 0, function () {
+                var resp;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, response.data.data[0].txHash];
+                        case 1:
+                            resp = _a.sent();
+                            return [2 /*return*/, resp];
+                    }
+                });
+            }); });
+            return [2 /*return*/];
+        });
+    });
+}
 function getUserInfo(uid) {
     return __awaiter(this, void 0, void 0, function () {
+        var addr;
         return __generator(this, function (_a) {
-            firebase.database().ref('/users').child(uid).once('value').then(function (snapshot) {
-                var details = snapshot.val();
-                return details;
-            });
-            return [2 /*return*/];
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, firebase.database().ref('/users').child(uid).once('value').then(function (snapshot) {
+                        var details = snapshot.val();
+                        return details.publicKey;
+                    })];
+                case 1:
+                    addr = _a.sent();
+                    return [2 /*return*/, addr];
+            }
         });
     });
 }
 app.get('/generatekeys/:id', function (req, res) {
     var UserId = req.params.id;
     var ethAddress = createUser(UserId);
-    var mintTxHash = signup_mint(ethAddress);
-    res.send({ success: true, ethAddress: ethAddress, signUpHash: mintTxHash });
 });
 app.post('/addpost/:id', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var post, uid, postID, userInfo;
+    var Btitle, Bcontent, uid, Bimage, postObj, userInfo, postTxnId;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                post = req.body;
+                Btitle = req.body.title;
+                Bcontent = req.body.content;
                 uid = req.params.id;
-                return [4 /*yield*/, createPost(post)]; //Signing and passing to smart contract pending
+                Bimage = req.body.image;
+                postObj = {
+                    title: Btitle,
+                    content: Bcontent,
+                    image: Bimage
+                };
+                console.log(postObj);
+                return [4 /*yield*/, getUserInfo(uid)];
             case 1:
-                postID = _a.sent() //Signing and passing to smart contract pending
-                ;
-                userInfo = getUserInfo(uid);
-                res.send({ postID: postID });
+                userInfo = _a.sent();
+                return [4 /*yield*/, createPost(postObj) //Signing and passing to smart contract pending
+                        .then(function (resp) { return __awaiter(void 0, void 0, void 0, function () {
+                        var postTxn;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, pushPostId(resp, userInfo)];
+                                case 1:
+                                    postTxn = _a.sent();
+                                    res.send({ success: 'true', txnId: postTxn });
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); })];
+            case 2:
+                postTxnId = _a.sent();
                 return [2 /*return*/];
         }
     });
