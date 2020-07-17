@@ -1,4 +1,5 @@
 ;(global as any).WebSocket = require('isomorphic-ws')
+const config = require('../config.js')
 import { Client, KeyInfo, ThreadID, Buckets } from '@textile/hub'
 import {Libp2pCryptoIdentity} from '@textile/threads-core';
 import express = require('express')
@@ -11,38 +12,32 @@ import { Request, Response } from 'express';
 const bodyParser = require('body-parser');
 const Web3 = require('web3');
 const axios = require('axios')
-let web3provider = 'https://goerli.infura.io/v3/ee0e744e0cfe471ab09c8ef8efa2b08f'
+let web3provider = 'https://goerli.infura.io/v3/'+config.infuraKey
 const web3 = new Web3(new Web3.providers.HttpProvider(web3provider));
-const threadId = ThreadID.fromString('bafkwf6lewg4eaodvqms5feq35lqik4bydfswx3722qz2ltqzy3qopka')
+const threadId = ThreadID.fromString(config.treadId)
 
 //app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({limit: '50mb',extended: true}))
 
 
 var firebaseConfig = {
-    apiKey: "AIzaSyA3PZyMpVFpvKoCX0soSrXEn3GYa4DEAxI",
-    authDomain: "facts-fa7a1.firebaseapp.com",
-    databaseURL: "https://facts-fa7a1.firebaseio.com",
-    projectId: "facts-fa7a1",
-    storageBucket: "facts-fa7a1.appspot.com",
-    messagingSenderId: "788183696859",
-    appId: "1:788183696859:web:7f22a930afd231c17613fe"
+    apiKey: config.firebaseKey,
+    authDomain: config.domain,
+    databaseURL: config.dbURL,
+    projectId: config.id,
+    storageBucket: config.storageBucket,
+    messagingSenderId: config.msgSenderId,
+    appId: config.appId
   };
 
 firebase.initializeApp(firebaseConfig);
 
 var database = firebase.database();
 
-const ercInstance = axios.create({
-    baseURL: 'https://beta-api.ethvigil.com/v0.1/contract/0xad62722dba0857a2637bffaaade855773ded78f9',
-    timeout: 5000,
-    headers: {'X-API-KEY': 'c6cde06b-d6d3-4c10-9007-e6f6074c6983'}
-})
-
 const scInstance = axios.create({
-    baseURL: 'https://beta-api.ethvigil.com/v0.1/contract/0xad62722dba0857a2637bffaaade855773ded78f9',
+    baseURL: config.Ethapi+config.contract,
     timeout: 5000,
-    headers: {'X-API-KEY' : 'c6cde06b-d6d3-4c10-9007-e6f6074c6983'}
+    headers: {'X-API-KEY' : config.Ethkey}
 })
 
  async   function createUser ( uid: any) {
@@ -63,12 +58,9 @@ async function queryPost( postId: any ){
 }
 
 async function signup_mint(wallet_addr: any) {
-    ercInstance.post('/mint', {
+    let mintHash = await scInstance.post('/mint', {
         account: wallet_addr,
         amount: 1000
-    })
-    .then((response:any) => {
-        console.log(response.data)
     })
     .catch((error:any) => {
         if (error.response.data){
@@ -81,6 +73,7 @@ async function signup_mint(wallet_addr: any) {
 		}
 		process.exit(0);
     });
+    return mintHash
 }
 
 async function generateIdentityKey () {
