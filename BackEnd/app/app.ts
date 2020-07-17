@@ -13,7 +13,7 @@ const bodyParser = require('body-parser');
 const Web3 = require('web3');
 const axios = require('axios')
 let web3provider = 'https://goerli.infura.io/v3/'+config.infuraKey
-const web3 = new Web3(new Web3.providers.HttpProvider(web3provider));
+const web3 = new Web3();
 const threadId = ThreadID.fromString(config.treadId)
 
 //app.use(bodyParser.json())
