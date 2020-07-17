@@ -117,6 +117,19 @@ function createUser(uid) {
         });
     });
 }
+function queryPost(postId) {
+    return __awaiter(this, void 0, void 0, function () {
+        var resp;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, scInstance.get('/facts/' + postId)];
+                case 1:
+                    resp = _a.sent();
+                    return [2 /*return*/, resp];
+            }
+        });
+    });
+}
 function signup_mint(wallet_addr) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -189,24 +202,17 @@ function createPost(post) {
 }
 function pushPostId(id, publisherAddress) {
     return __awaiter(this, void 0, void 0, function () {
-        var _this = this;
+        var response;
         return __generator(this, function (_a) {
-            scInstance.post('/createPost', {
-                _ipfsHash: id,
-                publisher: publisherAddress
-            })
-                .then(function (response) { return __awaiter(_this, void 0, void 0, function () {
-                var resp;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0: return [4 /*yield*/, response.data.data[0].txHash];
-                        case 1:
-                            resp = _a.sent();
-                            return [2 /*return*/, resp];
-                    }
-                });
-            }); });
-            return [2 /*return*/];
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, scInstance.post('/createPost', {
+                        _ipfsHash: id,
+                        publisher: publisherAddress
+                    })];
+                case 1:
+                    response = _a.sent();
+                    return [2 /*return*/, response.data.data[0].txHash];
+            }
         });
     });
 }
@@ -253,16 +259,31 @@ app.post('/addpost/:id', function (req, res) { return __awaiter(void 0, void 0, 
                         var postTxn;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
-                                case 0: return [4 /*yield*/, pushPostId(resp, userInfo)];
+                                case 0: return [4 /*yield*/, pushPostId(resp, userInfo)
+                                        .then(function () { res.send({ success: 'true', txnId: postTxn }); })];
                                 case 1:
                                     postTxn = _a.sent();
-                                    res.send({ success: 'true', txnId: postTxn });
                                     return [2 /*return*/];
                             }
                         });
                     }); })];
             case 2:
                 postTxnId = _a.sent();
+                return [2 /*return*/];
+        }
+    });
+}); });
+app.get('/querypost/:id', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var postId, response;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                postId = req.params.id;
+                return [4 /*yield*/, queryPost(postId)];
+            case 1:
+                response = _a.sent();
+                console.log(response.data);
+                res.send({ resp: response.data });
                 return [2 /*return*/];
         }
     });

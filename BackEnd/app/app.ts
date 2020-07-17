@@ -57,6 +57,11 @@ const scInstance = axios.create({
     console.log(mintTxHash)
 }
 
+async function queryPost( postId: any ){
+    let resp = await scInstance.get('/facts/'+postId )
+    return resp
+}
+
 async function signup_mint(wallet_addr: any) {
     ercInstance.post('/mint', {
         account: wallet_addr,
@@ -101,14 +106,11 @@ async function createPost (post: any) {
   }
 
 async function pushPostId(id: any, publisherAddress: any) {
-    scInstance.post('/createPost', {
+    const response = await scInstance.post('/createPost', {
         _ipfsHash: id,
         publisher: publisherAddress
     })
-    .then(async (response: any) => {
-        const resp = await response.data.data[0].txHash
-        return resp
-    })
+    return response.data.data[0].txHash
 }
 
 async function getUserInfo(uid: any){
@@ -140,8 +142,15 @@ app.post('/addpost/:id', async (req, res) => {
     let postTxnId =  await createPost(postObj)         //Signing and passing to smart contract pending
                     .then(async(resp: any) => {
                         let postTxn = await pushPostId(resp, userInfo)
-                        res.send({success: 'true', txnId: postTxn})
+                                        .then(() => {res.send({success: 'true', txnId: postTxn})})
                     })
+})
+
+app.get('/querypost/:id', async(req, res) => {
+    let postId = req.params.id
+    const response = await queryPost(postId)
+    console.log(response.data)
+    res.send({resp: response.data})
 })
 
 
