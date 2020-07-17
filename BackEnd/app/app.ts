@@ -142,7 +142,7 @@ app.post('/addpost/:id', async (req, res) => {
     let postTxnId =  await createPost(postObj)         //Signing and passing to smart contract pending
                     .then(async(resp: any) => {
                         let postTxn = await pushPostId(resp, userInfo)
-                                        .then(() => {res.send({success: 'true', txnId: postTxn})})
+                                        .then(() => {res.send({success: 'true', txnId: postTxn, user: userInfo})})
                     })
 })
 
