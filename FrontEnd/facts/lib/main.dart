@@ -1,3 +1,4 @@
+import 'package:facts/Providers/homeScreenProvider.dart';
 import 'package:facts/Screens/LandingPage.dart';
 import 'package:facts/Screens/LoginPage.dart';
 import 'package:facts/Services/Auth.dart';
@@ -15,6 +16,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<AuthBase>(create: (context) => Auth()),
+        ChangeNotifierProvider<HomeScreenProvider>(
+            create: (context) => HomeScreenProvider()),
       ],
       child: MaterialApp(
         title: 'Facts',
