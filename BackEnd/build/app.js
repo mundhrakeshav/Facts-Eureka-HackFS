@@ -57,6 +57,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 ;
 global.WebSocket = require('isomorphic-ws');
+var config = require('../config.js');
 var hub_1 = require("@textile/hub");
 var threads_core_1 = require("@textile/threads-core");
 var express = require("express");
@@ -68,31 +69,26 @@ require("firebase/database");
 var bodyParser = require('body-parser');
 var Web3 = require('web3');
 var axios = require('axios');
-var web3provider = 'https://goerli.infura.io/v3/ee0e744e0cfe471ab09c8ef8efa2b08f';
-var web3 = new Web3(new Web3.providers.HttpProvider(web3provider));
-var threadId = hub_1.ThreadID.fromString('bafkwf6lewg4eaodvqms5feq35lqik4bydfswx3722qz2ltqzy3qopka');
+var web3provider = 'https://goerli.infura.io/v3/' + config.infuraKey;
+var web3 = new Web3();
+var threadId = hub_1.ThreadID.fromString(config.threadId);
 //app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 var firebaseConfig = {
-    apiKey: "AIzaSyA3PZyMpVFpvKoCX0soSrXEn3GYa4DEAxI",
-    authDomain: "facts-fa7a1.firebaseapp.com",
-    databaseURL: "https://facts-fa7a1.firebaseio.com",
-    projectId: "facts-fa7a1",
-    storageBucket: "facts-fa7a1.appspot.com",
-    messagingSenderId: "788183696859",
-    appId: "1:788183696859:web:7f22a930afd231c17613fe"
+    apiKey: config.firebaseKey,
+    authDomain: config.domain,
+    databaseURL: config.dbURL,
+    projectId: config.id,
+    storageBucket: config.storageBucket,
+    messagingSenderId: config.msgSenderId,
+    appId: config.appId
 };
 firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
-var ercInstance = axios.create({
-    baseURL: 'https://beta-api.ethvigil.com/v0.1/contract/0xad62722dba0857a2637bffaaade855773ded78f9',
-    timeout: 5000,
-    headers: { 'X-API-KEY': 'c6cde06b-d6d3-4c10-9007-e6f6074c6983' }
-});
 var scInstance = axios.create({
-    baseURL: 'https://beta-api.ethvigil.com/v0.1/contract/0xad62722dba0857a2637bffaaade855773ded78f9',
+    baseURL: config.Ethapi + config.contract,
     timeout: 5000,
-    headers: { 'X-API-KEY': 'c6cde06b-d6d3-4c10-9007-e6f6074c6983' }
+    headers: { 'X-API-KEY': config.Ethkey }
 });
 function createUser(uid) {
     return __awaiter(this, void 0, void 0, function () {
@@ -132,27 +128,29 @@ function queryPost(postId) {
 }
 function signup_mint(wallet_addr) {
     return __awaiter(this, void 0, void 0, function () {
+        var mintHash;
         return __generator(this, function (_a) {
-            ercInstance.post('/mint', {
-                account: wallet_addr,
-                amount: 1000
-            })
-                .then(function (response) {
-                console.log(response.data);
-            })
-                .catch(function (error) {
-                if (error.response.data) {
-                    console.log(error.response.data);
-                    if (error.response.data.error == 'unknown contract') {
-                        console.error('You filled in the wrong contract address!');
-                    }
-                }
-                else {
-                    console.log(error.response);
-                }
-                process.exit(0);
-            });
-            return [2 /*return*/];
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, scInstance.post('/mint', {
+                        account: wallet_addr,
+                        amount: 1000
+                    })
+                        .catch(function (error) {
+                        if (error.response.data) {
+                            console.log(error.response.data);
+                            if (error.response.data.error == 'unknown contract') {
+                                console.error('You filled in the wrong contract address!');
+                            }
+                        }
+                        else {
+                            console.log(error.response);
+                        }
+                        process.exit(0);
+                    })];
+                case 1:
+                    mintHash = _a.sent();
+                    return [2 /*return*/, mintHash];
+            }
         });
     });
 }
@@ -260,7 +258,7 @@ app.post('/addpost/:id', function (req, res) { return __awaiter(void 0, void 0, 
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0: return [4 /*yield*/, pushPostId(resp, userInfo)
-                                        .then(function () { res.send({ success: 'true', txnId: postTxn }); })];
+                                        .then(function () { res.send({ success: 'true', txnId: postTxn, user: userInfo }); })];
                                 case 1:
                                     postTxn = _a.sent();
                                     return [2 /*return*/];
@@ -286,6 +284,87 @@ app.get('/querypost/:id', function (req, res) { return __awaiter(void 0, void 0,
                 res.send({ resp: response.data });
                 return [2 /*return*/];
         }
+    });
+}); });
+app.get('/getallposts', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    function getAllPosts() {
+        return __awaiter(this, void 0, void 0, function () {
+            var response;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, scInstance.get('/getAllPosts')];
+                    case 1:
+                        response = _a.sent();
+                        return [2 /*return*/, response.data.data[0]["(address,uint256,uint256,string,(address,uint256,uint256,string)[])[]"]];
+                }
+            });
+        });
+    }
+    function getAllPostData() {
+        return __awaiter(this, void 0, void 0, function () {
+            var resp, postIds, threads, upvotes, donations, i;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, getAllPosts()
+                        //console.log(resp)
+                    ];
+                    case 1:
+                        resp = _a.sent();
+                        postIds = [];
+                        threads = [];
+                        upvotes = [];
+                        donations = [];
+                        for (i = 0; i < resp.length; i++) {
+                            postIds.push(resp[i][3]);
+                            threads.push(resp[i][4]);
+                            upvotes.push(resp[i][2]);
+                            donations.push(resp[i][1]);
+                        }
+                        getPostsData(postIds, threads, upvotes, donations);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    }
+    function getPostsData(ids, threads, upvotes, donations) {
+        return __awaiter(this, void 0, void 0, function () {
+            var auth, client, posts, x, resp;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        auth = {
+                            key: 'blyygdhgn5thkwyugov2g5gjxdu',
+                            secret: ''
+                        };
+                        return [4 /*yield*/, hub_1.Client.withKeyInfo(auth)];
+                    case 1:
+                        client = _a.sent();
+                        posts = new Array();
+                        x = 0;
+                        _a.label = 2;
+                    case 2:
+                        if (!(x < ids.length)) return [3 /*break*/, 5];
+                        return [4 /*yield*/, client.findByID(threadId, 'Posts', ids[x])];
+                    case 3:
+                        resp = _a.sent();
+                        resp.instance['threads'] = threads[x];
+                        resp.instance['upvotes'] = upvotes[x];
+                        resp.instance['donations'] = donations[x];
+                        posts.push(resp.instance);
+                        _a.label = 4;
+                    case 4:
+                        x++;
+                        return [3 /*break*/, 2];
+                    case 5:
+                        res.send(posts);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    }
+    return __generator(this, function (_a) {
+        getAllPostData();
+        return [2 /*return*/];
     });
 }); });
 app.listen(3000, function () { console.log("server running port 3000"); });

@@ -14,7 +14,7 @@ const Web3 = require('web3');
 const axios = require('axios')
 let web3provider = 'https://goerli.infura.io/v3/'+config.infuraKey
 const web3 = new Web3();
-const threadId = ThreadID.fromString(config.treadId)
+const threadId = ThreadID.fromString(config.threadId)
 
 //app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({limit: '50mb',extended: true}))
@@ -115,6 +115,7 @@ async function getUserInfo(uid: any){
 }
 
 
+
 app.get('/generatekeys/:id',(req, res) => {
     let UserId = req.params.id;
     const ethAddress = createUser(UserId)
@@ -144,6 +145,50 @@ app.get('/querypost/:id', async(req, res) => {
     const response = await queryPost(postId)
     console.log(response.data)
     res.send({resp: response.data})
+})
+
+app.get('/getallposts', async(req, res) => {
+    getAllPostData()
+    async function getAllPosts(){
+        const response = await scInstance.get('/getAllPosts')
+        return response.data.data[0]["(address,uint256,uint256,string,(address,uint256,uint256,string)[])[]"]
+    }
+    
+    async function getAllPostData(){
+        let resp = await getAllPosts()
+        //console.log(resp)
+        let postIds = []
+        let threads = []
+        let upvotes = []
+        let donations = []
+        let addresses = []
+        for(let i=0 ; i<resp.length ; i++){
+            postIds.push(resp[i][3])
+            threads.push(resp[i][4])
+            upvotes.push(resp[i][2])
+            donations.push(resp[i][1])
+            addresses.push(resp[i][0])
+        }
+        getPostsData(postIds, threads, upvotes, donations, addresses)
+    }
+    
+    async function getPostsData(ids: any, threads: any, upvotes: any, donations: any, addresses: any){
+        const auth: KeyInfo = {
+            key: 'blyygdhgn5thkwyugov2g5gjxdu',
+            secret: ''
+          }
+        const client = await Client.withKeyInfo(auth)
+        let posts = new Array()
+        for(let x = 0; x<ids.length; x++){
+            let resp = await client.findByID(threadId, 'Posts', ids[x])
+            resp.instance['threads'] = threads[x]
+            resp.instance['upvotes'] = upvotes[x]
+            resp.instance['donations'] = donations[x]
+            resp.instance['user'] = addresses[x]
+            posts.push(resp.instance)
+        }
+        res.send(posts)
+    }
 })
 
 
