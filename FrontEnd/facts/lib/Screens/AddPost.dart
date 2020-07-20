@@ -1,8 +1,12 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:facts/Screens/ngrok.dart';
+import 'package:facts/Services/CurrentUser.dart';
 import 'package:facts/Widgets/AppbarMain.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 class AddPost extends StatefulWidget {
@@ -37,8 +41,8 @@ class _AddPostState extends State<AddPost> {
     setState(() {
       file = File(pickedFile.path);
     });
-    Uint8List imageBytesList = file.readAsBytesSync();
-    print(imageBytesList);
+    // String imageBytesList = file.readAsStringSync();
+    // print(imageBytesList);
   }
 
   @override
@@ -90,7 +94,16 @@ class _AddPostState extends State<AddPost> {
                     FloatingActionButton(
                       heroTag: "Send",
                       backgroundColor: Colors.white.withOpacity(.9),
-                      onPressed: () {
+                      onPressed: () async {
+                        http.post(
+                          ngrokAddress + "/addpost/${CurrentUser.user.uid}",
+                          //TODO change NGROK URL
+                          body: {
+                            "title": _title,
+                            "content": _body,
+                            "image": file.readAsBytesSync().toString(),
+                          },
+                        );
                         print(_title);
                         print(_body);
                       },

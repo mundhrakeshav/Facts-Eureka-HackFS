@@ -3,6 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
+
+String baseUrl = "http://77956cf06bd8.ngrok.io";
 
 class User {
   final String uid;
@@ -81,6 +84,8 @@ class Auth implements AuthBase {
     final AuthResult authResult = await _firebaseAuth
         .signInWithEmailAndPassword(email: email, password: password);
     CurrentUser.user = authResult.user;
+    print(CurrentUser.user.uid);
+// https://beta-api.ethvigil.com/v0.1/contract/0xad62722dba0857a2637bffaaade855773ded78f9',
     return _userFromFirebase(authResult.user);
   }
 
@@ -90,7 +95,12 @@ class Auth implements AuthBase {
     final AuthResult authResult = await _firebaseAuth
         .createUserWithEmailAndPassword(email: email, password: password);
     CurrentUser.user = authResult.user;
+    print(CurrentUser.user.uid);
+    http.Response response = await http.get(
+      "http://77956cf06bd8.ngrok.io/generatekeys/${CurrentUser.user.uid}", //TODO change NGROK URL
+    );
 
+    print(response.body);
     return _userFromFirebase(authResult.user);
   }
 

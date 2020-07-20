@@ -17,7 +17,9 @@ class _HomePageState extends State<HomePage> {
       body: Container(
         child: ListView.separated(
           itemBuilder: (context, index) {
-            return PostListItem();
+            return PostListItem(
+              index: index,
+            );
           },
           itemCount: 50,
           separatorBuilder: (context, index) => Divider(

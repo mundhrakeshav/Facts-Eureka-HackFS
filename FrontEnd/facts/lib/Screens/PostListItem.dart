@@ -2,6 +2,10 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 class PostListItem extends StatelessWidget {
+  final int index;
+
+  PostListItem({@required this.index});
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
