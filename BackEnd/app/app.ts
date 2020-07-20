@@ -131,7 +131,6 @@ app.post('/addpost/:id', async (req, res) => {
         content: Bcontent,
         image: Bimage
     }
-    console.log(postObj)
     let userInfo = await getUserInfo(uid);            //Address to send to smart contract
     let postTxnId =  await createPost(postObj)         //Signing and passing to smart contract pending
                     .then(async(resp: any) => {
@@ -143,7 +142,6 @@ app.post('/addpost/:id', async (req, res) => {
 app.get('/querypost/:id', async(req, res) => {
     let postId = req.params.id
     const response = await queryPost(postId)
-    console.log(response.data)
     res.send({resp: response.data})
 })
 
@@ -151,28 +149,32 @@ app.get('/getallposts', async(req, res) => {
     getAllPostData()
     async function getAllPosts(){
         const response = await scInstance.get('/getAllPosts')
-        return response.data.data[0]["(address,uint256,uint256,string,(address,uint256,uint256,string)[])[]"]
+        console.log(response.data)
+        return response.data.data[0]["(uint256,address,uint256,uint256,string,(uint256,uint256,address,uint256,uint256,string)[])[]"]
     }
     
     async function getAllPostData(){
-        let resp = await getAllPosts()
-        //console.log(resp)
-        let postIds = []
-        let threads = []
-        let upvotes = []
-        let donations = []
-        let addresses = []
-        for(let i=0 ; i<resp.length ; i++){
-            postIds.push(resp[i][3])
-            threads.push(resp[i][4])
-            upvotes.push(resp[i][2])
-            donations.push(resp[i][1])
-            addresses.push(resp[i][0])
-        }
-        getPostsData(postIds, threads, upvotes, donations, addresses)
+            let resp = await getAllPosts()
+            //console.log(resp)
+            let postIds = []
+            let threads = []
+            let upvotes = []
+            let donations = []
+            let addresses = []
+            let postIndex = []
+            for(let i=0 ; i<resp.length ; i++){
+                postIds.push(resp[i][4])
+                threads.push(resp[i][5])
+                upvotes.push(resp[i][3])
+                donations.push(resp[i][2])
+                addresses.push(resp[i][1])
+                postIndex.push(resp[i][0])
+            }
+            getPostsData(postIds, threads, upvotes, donations, addresses, postIndex)
+        
     }
     
-    async function getPostsData(ids: any, threads: any, upvotes: any, donations: any, addresses: any){
+    async function getPostsData(ids: any, threads: any, upvotes: any, donations: any, addresses: any, postIndex: any){
         const auth: KeyInfo = {
             key: 'blyygdhgn5thkwyugov2g5gjxdu',
             secret: ''
@@ -181,6 +183,7 @@ app.get('/getallposts', async(req, res) => {
         let posts = new Array()
         for(let x = 0; x<ids.length; x++){
             let resp = await client.findByID(threadId, 'Posts', ids[x])
+            resp.instance['postId'] = postIndex[x]
             resp.instance['threads'] = threads[x]
             resp.instance['upvotes'] = upvotes[x]
             resp.instance['donations'] = donations[x]

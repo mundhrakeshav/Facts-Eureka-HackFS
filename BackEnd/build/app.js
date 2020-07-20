@@ -248,7 +248,6 @@ app.post('/addpost/:id', function (req, res) { return __awaiter(void 0, void 0, 
                     content: Bcontent,
                     image: Bimage
                 };
-                console.log(postObj);
                 return [4 /*yield*/, getUserInfo(uid)];
             case 1:
                 userInfo = _a.sent();
@@ -280,7 +279,6 @@ app.get('/querypost/:id', function (req, res) { return __awaiter(void 0, void 0,
                 return [4 /*yield*/, queryPost(postId)];
             case 1:
                 response = _a.sent();
-                console.log(response.data);
                 res.send({ resp: response.data });
                 return [2 /*return*/];
         }
@@ -295,14 +293,15 @@ app.get('/getallposts', function (req, res) { return __awaiter(void 0, void 0, v
                     case 0: return [4 /*yield*/, scInstance.get('/getAllPosts')];
                     case 1:
                         response = _a.sent();
-                        return [2 /*return*/, response.data.data[0]["(address,uint256,uint256,string,(address,uint256,uint256,string)[])[]"]];
+                        console.log(response.data);
+                        return [2 /*return*/, response.data.data[0]["(uint256,address,uint256,uint256,string,(uint256,uint256,address,uint256,uint256,string)[])[]"]];
                 }
             });
         });
     }
     function getAllPostData() {
         return __awaiter(this, void 0, void 0, function () {
-            var resp, postIds, threads, upvotes, donations, i;
+            var resp, postIds, threads, upvotes, donations, addresses, postIndex, i;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, getAllPosts()
@@ -314,19 +313,23 @@ app.get('/getallposts', function (req, res) { return __awaiter(void 0, void 0, v
                         threads = [];
                         upvotes = [];
                         donations = [];
+                        addresses = [];
+                        postIndex = [];
                         for (i = 0; i < resp.length; i++) {
-                            postIds.push(resp[i][3]);
-                            threads.push(resp[i][4]);
-                            upvotes.push(resp[i][2]);
-                            donations.push(resp[i][1]);
+                            postIds.push(resp[i][4]);
+                            threads.push(resp[i][5]);
+                            upvotes.push(resp[i][3]);
+                            donations.push(resp[i][2]);
+                            addresses.push(resp[i][1]);
+                            postIndex.push(resp[i][0]);
                         }
-                        getPostsData(postIds, threads, upvotes, donations);
+                        getPostsData(postIds, threads, upvotes, donations, addresses, postIndex);
                         return [2 /*return*/];
                 }
             });
         });
     }
-    function getPostsData(ids, threads, upvotes, donations) {
+    function getPostsData(ids, threads, upvotes, donations, addresses, postIndex) {
         return __awaiter(this, void 0, void 0, function () {
             var auth, client, posts, x, resp;
             return __generator(this, function (_a) {
@@ -347,9 +350,11 @@ app.get('/getallposts', function (req, res) { return __awaiter(void 0, void 0, v
                         return [4 /*yield*/, client.findByID(threadId, 'Posts', ids[x])];
                     case 3:
                         resp = _a.sent();
+                        resp.instance['postIndex'] = postIndex[x];
                         resp.instance['threads'] = threads[x];
                         resp.instance['upvotes'] = upvotes[x];
                         resp.instance['donations'] = donations[x];
+                        resp.instance['user'] = addresses[x];
                         posts.push(resp.instance);
                         _a.label = 4;
                     case 4:
