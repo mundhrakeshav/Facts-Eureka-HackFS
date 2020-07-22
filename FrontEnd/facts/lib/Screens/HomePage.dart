@@ -5,7 +5,6 @@ import 'package:facts/Screens/ngrok.dart';
 import 'package:facts/Widgets/AppbarMain.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -18,14 +17,20 @@ class _HomePageState extends State<HomePage> {
   getAllPosts() async {
     http.Response response = await http.get(ngrokAddress + "/getallposts");
     var data = jsonDecode(response.body);
-    print(data.runtimeType);
+    print(data);
     setState(() {
       _isLoading = false;
     });
     for (var fact in data) {
-      // Fact(
-      //   body: fact["content"],
-      // );
+      Fact _fact = Fact(
+        body: fact["content"],
+        publisher: fact["user"],
+        threads: fact["threads"],
+        title: fact["title"],
+        upvotes: fact["upvotes"],
+        postID: fact["postId:"],
+      );
+      facts.add(_fact);
     }
   }
 
@@ -47,11 +52,19 @@ class _HomePageState extends State<HomePage> {
           : Container(
               child: ListView.separated(
                 itemBuilder: (context, index) {
+                  Fact fact = facts[index];
                   return PostListItem(
                     index: index,
+                    body: fact.body,
+                    postID: fact.postID,
+                    publisher: fact.publisher,
+                    threadCount: fact.threads.length,
+                    threads: fact.threads,
+                    upvotes: fact.upvotes,
+                    title: fact.title,
                   );
                 },
-                itemCount: 50,
+                itemCount: facts.length,
                 separatorBuilder: (context, index) => Divider(
                   thickness: 2,
                 ),
@@ -68,14 +81,15 @@ class Fact {
   Image image;
   String body;
   int upvotes;
-  int threads;
-
+  List<dynamic> threads;
+  int postID;
   Fact({
     @required this.publisher,
     @required this.title,
     @required this.body,
-    @required this.image,
+    this.image,
     @required this.threads,
     @required this.upvotes,
+    @required this.postID,
   });
 }

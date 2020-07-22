@@ -2,9 +2,19 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 class PostListItem extends StatelessWidget {
-  final int index;
-
-  PostListItem({@required this.index});
+  final int index, postID, upvotes, threadCount;
+  final String title, publisher, body;
+  final List<dynamic> threads;
+  PostListItem({
+    @required this.index,
+    @required this.title,
+    @required this.body,
+    @required this.postID,
+    @required this.publisher,
+    @required this.threadCount,
+    @required this.threads,
+    @required this.upvotes,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,11 +26,12 @@ class PostListItem extends StatelessWidget {
           child: Column(
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Flexible(
                       flex: 2,
                       child: AutoSizeText(
-                        "Dolores laudantium fugiat voluptates fugiat esse dolor ea distinctio nam. Sed consequatur dolores dignissimos.",
+                        title,
                         maxLines: 4,
                         style: TextStyle(
                           fontSize: 15,
@@ -50,13 +61,13 @@ class PostListItem extends StatelessWidget {
                   Column(
                     children: [
                       Text(
-                        "Total Upvotes: 1000",
+                        "Total Upvotes: " + upvotes.toString(),
                         style: TextStyle(
                           fontFamily: "Abel",
                         ),
                       ),
                       Text(
-                        "Total Threads: 10",
+                        "Total Threads:" + threadCount.toString(),
                         style: TextStyle(fontFamily: "Abel"),
                       ),
                     ],

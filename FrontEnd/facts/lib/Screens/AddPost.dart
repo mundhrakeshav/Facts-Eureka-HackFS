@@ -7,6 +7,7 @@ import 'package:facts/Widgets/AppbarMain.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AddPost extends StatefulWidget {
@@ -23,25 +24,90 @@ class _AddPostState extends State<AddPost> {
 
   String get _body => _bodyController.text;
 
-  File file;
+  File _image;
 
   final picker = ImagePicker();
 
   void _chooseViaGallery() async {
     final pickedFile = await picker.getImage(source: ImageSource.gallery);
     setState(() {
-      file = File(pickedFile.path);
+      _image = File(pickedFile.path);
     });
-    Uint8List imageBytesList = file.readAsBytesSync();
-    print(imageBytesList);
+
+    File croppedFile = await ImageCropper.cropImage(
+        sourcePath: _image.path,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+          CropAspectRatioPreset.ratio3x2,
+          CropAspectRatioPreset.original,
+          CropAspectRatioPreset.ratio4x3,
+          CropAspectRatioPreset.ratio16x9,
+          CropAspectRatioPreset.ratio5x3
+        ],
+        androidUiSettings: AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        iosUiSettings: IOSUiSettings(
+          minimumAspectRatio: 1.0,
+        ));
+    print("object");
+    print(await croppedFile.length());
+    var result = await FlutterImageCompress.compressAndGetFile(
+      croppedFile.path,
+      _image.path,
+      quality: 10,
+      rotate: 0,
+    );
+    setState(() {
+      _image = result;
+    });
+    print(await _image.length());
+
+    // String imageBytesList = _image.readAsStringSync();
+    // print(imageBytesList);
   }
 
   void _chooseViaCamera() async {
     final pickedFile = await picker.getImage(source: ImageSource.camera);
     setState(() {
-      file = File(pickedFile.path);
+      _image = File(pickedFile.path);
     });
-    // String imageBytesList = file.readAsStringSync();
+
+    File croppedFile = await ImageCropper.cropImage(
+        sourcePath: _image.path,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+          CropAspectRatioPreset.ratio3x2,
+          CropAspectRatioPreset.original,
+          CropAspectRatioPreset.ratio4x3,
+          CropAspectRatioPreset.ratio16x9,
+          CropAspectRatioPreset.ratio5x3
+        ],
+        androidUiSettings: AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        iosUiSettings: IOSUiSettings(
+          minimumAspectRatio: 1.0,
+        ));
+    print("object");
+    print(await croppedFile.length());
+    var result = await FlutterImageCompress.compressAndGetFile(
+      croppedFile.path,
+      _image.path,
+      quality: 10,
+      rotate: 0,
+    );
+    setState(() {
+      _image = result;
+    });
+    print(await _image.length());
+    // String imageBytesList = _image.readAsStringSync();
     // print(imageBytesList);
   }
 
@@ -95,17 +161,20 @@ class _AddPostState extends State<AddPost> {
                       heroTag: "Send",
                       backgroundColor: Colors.white.withOpacity(.9),
                       onPressed: () async {
-                        http.post(
+                        http.Response resp = await http.post(
                           ngrokAddress + "/addpost/${CurrentUser.user.uid}",
                           //TODO change NGROK URL
                           body: {
                             "title": _title,
                             "content": _body,
-                            "image": file.readAsBytesSync().toString(),
+                            "image": _image.readAsBytesSync().toString(),
                           },
                         );
+                        _titleController.clear();
+                        _bodyController.clear();
                         print(_title);
                         print(_body);
+                        print(resp.body);
                       },
                       child: Icon(Icons.send),
                     )
