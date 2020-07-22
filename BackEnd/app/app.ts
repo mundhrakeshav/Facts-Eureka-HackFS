@@ -114,6 +114,20 @@ async function getUserInfo(uid: any){
     return addr
 }
 
+async function hasUserPurchased(pid: any, addr: any){
+    const resp = await scInstance.get('/hasUserPurchased/'+pid+'/'+addr)
+    return resp.data[0].bool
+}
+
+async function purchasePost(pid: any, pubAddr: any, userAddr: any){
+    const response = await scInstance.post('/purchasePost', {
+        postId: pid,
+        publisher: pubAddr,
+        user: userAddr
+    })
+    return response
+}
+
 
 
 app.get('/generatekeys/:id',(req, res) => {
@@ -135,7 +149,7 @@ app.post('/addpost/:id', async (req, res) => {
     let postTxnId =  await createPost(postObj)         //Signing and passing to smart contract pending
                     .then(async(resp: any) => {
                         let postTxn = await pushPostId(resp, userInfo)
-                                        .then(() => {res.send({success: 'true', txnId: postTxn, user: userInfo})})
+                                        .then((response) => {res.send({success: 'true', txnId: response, user: userInfo})})
                     })
 })
 
@@ -193,6 +207,32 @@ app.get('/getallposts', async(req, res) => {
         res.send(posts)
     }
 })
+
+app.get('/haspurchased/:pid/:uid', async(req, res) => {
+    const pid = req.params.pid
+    const uid = req.params.uid
+    const useraddr = await getUserInfo(uid)
+    hasUserPurchased(pid, useraddr)
+        .then((response) => {
+            res.send(response)
+        })
+})
+
+
+app.post('/purchasePost/:uid', async(req, res) => {
+    const pid = req.body.postId
+    const pubAddr = req.body.publisherAddress
+    const userAddr = await getUserInfo(req.params.uid)
+    purchasePost(pid, pubAddr, userAddr)
+        .then((response) => {
+            if(response.success){
+                res.send({success: 'true', txHash: response.data[0].txHash})
+            } else {
+                res.send({success: 'false', errorMessage: 'Some error has occured, also make sure you have enough balance'})
+            }
+        })
+})
+
 
 
 app.listen(3000, () => {console.log("server running port 3000")})

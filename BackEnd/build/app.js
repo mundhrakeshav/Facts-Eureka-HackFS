@@ -257,7 +257,7 @@ app.post('/addpost/:id', function (req, res) { return __awaiter(void 0, void 0, 
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0: return [4 /*yield*/, pushPostId(resp, userInfo)
-                                        .then(function () { res.send({ success: 'true', txnId: postTxn, user: userInfo }); })];
+                                        .then(function (response) { res.send({ success: 'true', txnId: response, user: userInfo }); })];
                                 case 1:
                                     postTxn = _a.sent();
                                     return [2 /*return*/];
@@ -350,7 +350,7 @@ app.get('/getallposts', function (req, res) { return __awaiter(void 0, void 0, v
                         return [4 /*yield*/, client.findByID(threadId, 'Posts', ids[x])];
                     case 3:
                         resp = _a.sent();
-                        resp.instance['postIndex'] = postIndex[x];
+                        resp.instance['postId'] = postIndex[x];
                         resp.instance['threads'] = threads[x];
                         resp.instance['upvotes'] = upvotes[x];
                         resp.instance['donations'] = donations[x];
