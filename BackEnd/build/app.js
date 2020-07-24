@@ -443,4 +443,4 @@ app.post('/purchasePost/:uid', function (req, res) { return __awaiter(void 0, vo
         }
     });
 }); });
-app.listen(3000, function () { console.log("server running port 3000"); });
+app.listen(process.env.PORT || 5000, function () { console.log("server running"); });
