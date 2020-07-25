@@ -69,7 +69,6 @@ require("firebase/database");
 var bodyParser = require('body-parser');
 var Web3 = require('web3');
 var axios = require('axios');
-var web3provider = 'https://goerli.infura.io/v3/' + config.infuraKey;
 var web3 = new Web3();
 var threadId = hub_1.ThreadID.fromString(config.threadId);
 //app.use(bodyParser.json())
@@ -200,7 +199,7 @@ function createPost(post) {
 }
 function pushPostId(id, publisherAddress) {
     return __awaiter(this, void 0, void 0, function () {
-        var response;
+        var response, postID, resp;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, scInstance.post('/createPost', {
@@ -209,6 +208,15 @@ function pushPostId(id, publisherAddress) {
                     })];
                 case 1:
                     response = _a.sent();
+                    return [4 /*yield*/, scInstance.get('/postCount')];
+                case 2:
+                    postID = _a.sent();
+                    return [4 /*yield*/, scInstance.post('/setPublisherPurchase', {
+                            postId: postID.data.data[0].uint256,
+                            publisher: publisherAddress
+                        })];
+                case 3:
+                    resp = _a.sent();
                     return [2 /*return*/, response.data.data[0].txHash];
             }
         });
@@ -238,7 +246,7 @@ function hasUserPurchased(pid, addr) {
                 case 0: return [4 /*yield*/, scInstance.get('/hasUserPurchased/' + pid + '/' + addr)];
                 case 1:
                     resp = _a.sent();
-                    return [2 /*return*/, resp.data[0].bool];
+                    return [2 /*return*/, resp.data.data[0].bool];
             }
         });
     });
@@ -432,8 +440,8 @@ app.post('/purchasePost/:uid', function (req, res) { return __awaiter(void 0, vo
                 userAddr = _a.sent();
                 purchasePost(pid, pubAddr, userAddr)
                     .then(function (response) {
-                    if (response.success) {
-                        res.send({ success: 'true', txHash: response.data[0].txHash });
+                    if (response.data.success) {
+                        res.send({ success: 'true', txHash: response.data.data[0].txHash });
                     }
                     else {
                         res.send({ success: 'false', errorMessage: 'Some error has occured, also make sure you have enough balance' });
@@ -443,4 +451,4 @@ app.post('/purchasePost/:uid', function (req, res) { return __awaiter(void 0, vo
         }
     });
 }); });
-app.listen(process.env.PORT || 5000, function () { console.log("server running"); });
+app.listen(process.env.PORT || 5000, function () { console.log("server running port 3000"); });

@@ -12,7 +12,6 @@ import { Request, Response } from 'express';
 const bodyParser = require('body-parser');
 const Web3 = require('web3');
 const axios = require('axios')
-let web3provider = 'https://goerli.infura.io/v3/'+config.infuraKey
 const web3 = new Web3();
 const threadId = ThreadID.fromString(config.threadId)
 
@@ -103,6 +102,11 @@ async function pushPostId(id: any, publisherAddress: any) {
         _ipfsHash: id,
         publisher: publisherAddress
     })
+    const postID = await scInstance.get('/postCount')
+    const resp = await scInstance.post('/setPublisherPurchase', {
+        postId: postID.data.data[0].uint256,
+        publisher: publisherAddress
+    })
     return response.data.data[0].txHash
 }
 
@@ -116,7 +120,7 @@ async function getUserInfo(uid: any){
 
 async function hasUserPurchased(pid: any, addr: any){
     const resp = await scInstance.get('/hasUserPurchased/'+pid+'/'+addr)
-    return resp.data[0].bool
+    return resp.data.data[0].bool
 }
 
 async function purchasePost(pid: any, pubAddr: any, userAddr: any){
@@ -225,8 +229,8 @@ app.post('/purchasePost/:uid', async(req, res) => {
     const userAddr = await getUserInfo(req.params.uid)
     purchasePost(pid, pubAddr, userAddr)
         .then((response) => {
-            if(response.success){
-                res.send({success: 'true', txHash: response.data[0].txHash})
+            if(response.data.success){
+                res.send({success: 'true', txHash: response.data.data[0].txHash})
             } else {
                 res.send({success: 'false', errorMessage: 'Some error has occured, also make sure you have enough balance'})
             }
@@ -235,5 +239,5 @@ app.post('/purchasePost/:uid', async(req, res) => {
 
 
 
-app.listen(process.env.PORT || 5000, () => {console.log("server running")})
+app.listen(process.env.PORT || 5000, () => {console.log("server running port 3000")})
 
