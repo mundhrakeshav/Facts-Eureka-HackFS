@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:facts/Providers/homeScreenProvider.dart';
 import 'package:facts/Screens/ngrok.dart';
 import 'package:facts/Services/CurrentUser.dart';
 import 'package:facts/Widgets/AppbarMain.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class AddPost extends StatefulWidget {
   @override
@@ -95,7 +97,6 @@ class _AddPostState extends State<AddPost> {
         iosUiSettings: IOSUiSettings(
           minimumAspectRatio: 1.0,
         ));
-    print("object");
     print(await croppedFile.length());
     var result = await FlutterImageCompress.compressAndGetFile(
       croppedFile.path,
@@ -133,6 +134,13 @@ class _AddPostState extends State<AddPost> {
                 ),
                 titleInput(),
                 bodyInput(),
+                _image != null
+                    ? Container(
+                        margin: EdgeInsets.all(10),
+                        padding: EdgeInsets.all(20),
+                        child: Image.file(_image),
+                      )
+                    : Container(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -163,7 +171,6 @@ class _AddPostState extends State<AddPost> {
                       onPressed: () async {
                         http.Response resp = await http.post(
                           ngrokAddress + "/addpost/${CurrentUser.user.uid}",
-                          //TODO change NGROK URL
                           body: {
                             "title": _title,
                             "content": _body,
@@ -172,6 +179,9 @@ class _AddPostState extends State<AddPost> {
                         );
                         _titleController.clear();
                         _bodyController.clear();
+                        setState(() {
+                          _image = null;
+                        });
                         print(_title);
                         print(_body);
                         print(resp.body);

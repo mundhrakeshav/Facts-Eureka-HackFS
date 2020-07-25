@@ -1,25 +1,30 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:facts/Providers/homeScreenProvider.dart';
+import 'package:facts/Screens/DetailedPost.dart';
+import 'package:facts/Screens/ngrok.dart';
+import 'package:facts/Services/CurrentUser.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class PostListItem extends StatelessWidget {
-  final int index, postID, upvotes, threadCount;
-  final String title, publisher, body;
-  final List<dynamic> threads;
+  final int index;
+
   PostListItem({
     @required this.index,
-    @required this.title,
-    @required this.body,
-    @required this.postID,
-    @required this.publisher,
-    @required this.threadCount,
-    @required this.threads,
-    @required this.upvotes,
   });
 
   @override
   Widget build(BuildContext context) {
+    HomeScreenProvider _factProvider = Provider.of<HomeScreenProvider>(context);
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  DetailedPost(fact: _factProvider.facts[index]),
+            ));
+      },
       splashColor: Colors.black54,
       child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
@@ -31,7 +36,7 @@ class PostListItem extends StatelessWidget {
                   Flexible(
                       flex: 2,
                       child: AutoSizeText(
-                        title,
+                        _factProvider.facts[index].title.toUpperCase(),
                         maxLines: 4,
                         style: TextStyle(
                           fontSize: 15,
@@ -44,8 +49,8 @@ class PostListItem extends StatelessWidget {
                     flex: 1,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Image.network(
-                        "https://file.mockplus.com/image/2018/11/9314c44f-c653-40a6-8ea5-7e1c903feecf.png",
+                      child: Image.memory(
+                        _factProvider.facts[index].image,
                         width: MediaQuery.of(context).size.width * .3,
                       ),
                     ),
@@ -61,13 +66,16 @@ class PostListItem extends StatelessWidget {
                   Column(
                     children: [
                       Text(
-                        "Total Upvotes: " + upvotes.toString(),
+                        "Total Upvotes: " +
+                            _factProvider.facts[index].upvotes.toString(),
                         style: TextStyle(
                           fontFamily: "Abel",
                         ),
                       ),
                       Text(
-                        "Total Threads:" + threadCount.toString(),
+                        "Total Threads:" +
+                            _factProvider.facts[index].threads.length
+                                .toString(),
                         style: TextStyle(fontFamily: "Abel"),
                       ),
                     ],

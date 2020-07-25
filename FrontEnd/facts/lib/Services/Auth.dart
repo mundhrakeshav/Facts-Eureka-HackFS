@@ -1,3 +1,4 @@
+import 'package:facts/Screens/ngrok.dart';
 import 'package:facts/Services/CurrentUser.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -97,7 +98,8 @@ class Auth implements AuthBase {
     CurrentUser.user = authResult.user;
     print(CurrentUser.user.uid);
     http.Response response = await http.get(
-      "http://77956cf06bd8.ngrok.io/generatekeys/${CurrentUser.user.uid}", //TODO change NGROK URL
+      ngrokAddress +
+          "/generatekeys/${CurrentUser.user.uid}", //TODO change NGROK URL
     );
 
     print(response.body);

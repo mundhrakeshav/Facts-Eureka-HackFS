@@ -1,6 +1,5 @@
 import 'package:facts/Providers/homeScreenProvider.dart';
 import 'package:facts/Screens/LandingPage.dart';
-import 'package:facts/Screens/LoginPage.dart';
 import 'package:facts/Services/Auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +19,7 @@ class MyApp extends StatelessWidget {
             create: (context) => HomeScreenProvider()),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Facts',
         theme: ThemeData.dark().copyWith(),
         home: SafeArea(child: LandingPage()),
