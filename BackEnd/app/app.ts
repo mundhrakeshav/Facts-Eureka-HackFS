@@ -9,11 +9,14 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/database";
 import { Request, Response } from 'express';
+import { json } from 'body-parser';
 const bodyParser = require('body-parser');
 const Web3 = require('web3');
 const axios = require('axios')
 const web3 = new Web3();
 const threadId = ThreadID.fromString(config.threadId)
+const host = '0.0.0.0';
+const port = process.env.PORT || 3000;
 
 //app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({limit: '50mb',extended: true}))
@@ -39,6 +42,7 @@ const scInstance = axios.create({
     headers: {'X-API-KEY' : config.Ethkey}
 })
 
+//Functions Starts
  async   function createUser ( uid: any) {
     const identityKey = await generateIdentityKey()
     const ethAccount = await createEthereumAccount()
@@ -133,7 +137,18 @@ async function purchasePost(pid: any, pubAddr: any, userAddr: any){
 }
 
 
+async function addThread(hash: any, postId: any, publisherAddr: any){
+    const response = await scInstance.post('/createThread', {
+        postID: postId,
+        _ipfsHash: hash,
+        publisher: publisherAddr
+    })
+    return response.data.data[0].txHash
+}
+//Functions End
 
+
+//Routes Starts
 app.get('/generatekeys/:id',(req, res) => {
     let UserId = req.params.id;
     const ethAddress = createUser(UserId)
@@ -236,6 +251,63 @@ app.post('/purchasePost/:uid', async(req, res) => {
             }
         })
 })
+
+
+app.post('/createthread/:pid/:uid', async(req, res) => {
+    const postId = req.params.pid
+    const userAddr = await getUserInfo(req.params.uid)
+    const thread = {
+        title: req.body.title,
+        image: req.body.image,
+        content: req.body.content
+    }
+    let post = await createPost(thread)
+                .then(async(resp) => {
+                    const threadHash = await addThread(resp,postId,userAddr)
+                    res.send({success: 'true', postID: postId, threadTxHash: threadHash})
+                })
+})
+
+app.post('/getallthreads/:pid', async(req, res) => {
+    const threads = req.body.threads
+    const arr = JSON.parse(threads)
+    let threadHash = []
+    let threadIds = []
+    let postIds = []
+    let publisherAddresses = []
+    let donations = []
+    let upvotes = []
+
+    for(let i = 0; i<arr.length; i++){
+        threadIds.push(arr[i][0])
+        postIds.push(arr[i][1])
+        publisherAddresses.push(arr[i][2])
+        donations.push(arr[i][3])
+        upvotes.push(arr[i][4])
+        threadHash.push(arr[i][5])
+    }
+    getAllThreadsData(threadHash,threadIds, postIds, publisherAddresses,donations,upvotes)
+
+    async function getAllThreadsData(threadHash: any, threadIds: any, postIds: any, publisherAddr: any, donations: any, upvotes: any){
+        const auth: KeyInfo = {
+            key: 'blyygdhgn5thkwyugov2g5gjxdu',
+            secret: ''
+          }
+        const client = await Client.withKeyInfo(auth)
+        let threads = new Array()
+        for(let x = 0; x<threadHash.length; x++){
+            let resp = await client.findByID(threadId, 'Posts', threadHash[x])
+            resp.instance['postId'] = postIds[x]
+            resp.instance['threadId'] = threadIds[x]
+            resp.instance['upvotes'] = upvotes[x]
+            resp.instance['donations'] = donations[x]
+            resp.instance['publisher'] = publisherAddr[x]
+            threads.push(resp.instance)
+        }
+        res.send(threads)
+    }
+})
+//Routes End
 
 
 

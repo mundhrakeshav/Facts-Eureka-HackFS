@@ -71,6 +71,8 @@ var Web3 = require('web3');
 var axios = require('axios');
 var web3 = new Web3();
 var threadId = hub_1.ThreadID.fromString(config.threadId);
+var host = '0.0.0.0';
+var port = process.env.PORT || 3000;
 //app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 var firebaseConfig = {
@@ -89,6 +91,7 @@ var scInstance = axios.create({
     timeout: 5000,
     headers: { 'X-API-KEY': config.Ethkey }
 });
+//Functions Starts
 function createUser(uid) {
     return __awaiter(this, void 0, void 0, function () {
         var identityKey, ethAccount, mintTxHash;
@@ -268,6 +271,25 @@ function purchasePost(pid, pubAddr, userAddr) {
         });
     });
 }
+function addThread(hash, postId, publisherAddr) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, scInstance.post('/createThread', {
+                        postID: postId,
+                        _ipfsHash: hash,
+                        publisher: publisherAddr
+                    })];
+                case 1:
+                    response = _a.sent();
+                    return [2 /*return*/, response.data.data[0].txHash];
+            }
+        });
+    });
+}
+//Functions End
+//Routes Starts
 app.get('/generatekeys/:id', function (req, res) {
     var UserId = req.params.id;
     var ethAddress = createUser(UserId);
@@ -451,4 +473,99 @@ app.post('/purchasePost/:uid', function (req, res) { return __awaiter(void 0, vo
         }
     });
 }); });
+app.post('/createthread/:pid/:uid', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var postId, userAddr, thread, post;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                postId = req.params.pid;
+                return [4 /*yield*/, getUserInfo(req.params.uid)];
+            case 1:
+                userAddr = _a.sent();
+                thread = {
+                    title: req.body.title,
+                    image: req.body.image,
+                    content: req.body.content
+                };
+                return [4 /*yield*/, createPost(thread)
+                        .then(function (resp) { return __awaiter(void 0, void 0, void 0, function () {
+                        var threadHash;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, addThread(resp, postId, userAddr)];
+                                case 1:
+                                    threadHash = _a.sent();
+                                    res.send({ success: 'true', postID: postId, threadTxHash: threadHash });
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); })];
+            case 2:
+                post = _a.sent();
+                return [2 /*return*/];
+        }
+    });
+}); });
+app.post('/getallthreads/:pid', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    function getAllThreadsData(threadHash, threadIds, postIds, publisherAddr, donations, upvotes) {
+        return __awaiter(this, void 0, void 0, function () {
+            var auth, client, threads, x, resp;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        auth = {
+                            key: 'blyygdhgn5thkwyugov2g5gjxdu',
+                            secret: ''
+                        };
+                        return [4 /*yield*/, hub_1.Client.withKeyInfo(auth)];
+                    case 1:
+                        client = _a.sent();
+                        threads = new Array();
+                        x = 0;
+                        _a.label = 2;
+                    case 2:
+                        if (!(x < threadHash.length)) return [3 /*break*/, 5];
+                        return [4 /*yield*/, client.findByID(threadId, 'Posts', threadHash[x])];
+                    case 3:
+                        resp = _a.sent();
+                        resp.instance['postId'] = postIds[x];
+                        resp.instance['threadId'] = threadIds[x];
+                        resp.instance['upvotes'] = upvotes[x];
+                        resp.instance['donations'] = donations[x];
+                        resp.instance['publisher'] = publisherAddr[x];
+                        threads.push(resp.instance);
+                        _a.label = 4;
+                    case 4:
+                        x++;
+                        return [3 /*break*/, 2];
+                    case 5:
+                        res.send(threads);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    }
+    var threads, arr, threadHash, threadIds, postIds, publisherAddresses, donations, upvotes, i;
+    return __generator(this, function (_a) {
+        threads = req.body.threads;
+        arr = JSON.parse(threads);
+        threadHash = [];
+        threadIds = [];
+        postIds = [];
+        publisherAddresses = [];
+        donations = [];
+        upvotes = [];
+        for (i = 0; i < arr.length; i++) {
+            threadIds.push(arr[i][0]);
+            postIds.push(arr[i][1]);
+            publisherAddresses.push(arr[i][2]);
+            donations.push(arr[i][3]);
+            upvotes.push(arr[i][4]);
+            threadHash.push(arr[i][5]);
+        }
+        getAllThreadsData(threadHash, threadIds, postIds, publisherAddresses, donations, upvotes);
+        return [2 /*return*/];
+    });
+}); });
+//Routes End
 app.listen(process.env.PORT || 5000, function () { console.log("server running port 3000"); });
