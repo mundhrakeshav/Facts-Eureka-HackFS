@@ -306,11 +306,11 @@ function upvoteThread(reqbody) {
         var response;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, scInstance.post('/upVoteFact', {
+                case 0: return [4 /*yield*/, scInstance.post('/upVoteThread', {
                         postID: reqbody.postID,
                         threadID: reqbody.threadID,
                         user: reqbody.user
-                    })];
+                    }).catch(function (err) { console.log(err.data); })];
                 case 1:
                     response = _a.sent();
                     if (response.data.success) {
@@ -351,7 +351,7 @@ function donateFact(reqbody) {
         var response;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, scInstance('/donateToFact', {
+                case 0: return [4 /*yield*/, scInstance.post('/donateToFact', {
                         amount: reqbody.amount,
                         from: reqbody.from,
                         factId: reqbody.factId
@@ -374,7 +374,7 @@ function donateThread(reqbody) {
         var response;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, scInstance('/donateToThread', {
+                case 0: return [4 /*yield*/, scInstance.post('/donateToThread', {
                         amount: reqbody.amount,
                         from: reqbody.from,
                         factId: reqbody.factId,
@@ -652,6 +652,7 @@ app.post('/upvotethread/:pid/:tid/:uid', function (req, res) { return __awaiter(
                     threadID: threadId,
                     user: userAddr
                 };
+                console.log(reqbody);
                 return [4 /*yield*/, upvoteThread(reqbody)];
             case 2:
                 resp = _a.sent();
@@ -736,11 +737,11 @@ app.post('/donatetofact/:pid/:uid', function (req, res) { return __awaiter(void 
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                postId = req.params.pid;
+                postId = parseInt(req.params.pid);
                 return [4 /*yield*/, getUserInfo(req.params.uid)];
             case 1:
                 userAddr = _a.sent();
-                Amount = req.body.amount;
+                Amount = parseInt(req.body.amount);
                 reqbody = {
                     amount: Amount,
                     from: userAddr,
