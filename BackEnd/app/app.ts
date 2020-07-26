@@ -153,11 +153,11 @@ async function getAllThreads(pid: any){
 
 
 async function upvoteThread(reqbody: any){
-    const response = await scInstance.post('/upVoteFact', {
+    const response = await scInstance.post('/upVoteThread', {
         postID: reqbody.postID,
         threadID: reqbody.threadID,
         user: reqbody.user
-    })
+    }).catch((err: any) => {console.log(err.data)})
     if(response.data.success){
         return response.data.data[0].txHash
     } else {
@@ -180,7 +180,7 @@ async function upvoteFact(reqbody: any){
 
 
 async function donateFact(reqbody: any){
-    const response = await scInstance('/donateToFact', {
+    const response = await scInstance.post('/donateToFact', {
         amount: reqbody.amount,
         from: reqbody.from,
         factId: reqbody.factId
@@ -194,7 +194,7 @@ async function donateFact(reqbody: any){
 }
 
 async function donateThread(reqbody: any){
-    const response = await scInstance('/donateToThread', {
+    const response = await scInstance.post('/donateToThread', {
         amount: reqbody.amount,
         from: reqbody.from,
         factId: reqbody.factId,
@@ -354,6 +354,7 @@ app.post('/upvotethread/:pid/:tid/:uid', async(req, res) => {
         threadID: threadId,
         user: userAddr
     }
+    console.log(reqbody)
     const resp = await upvoteThread(reqbody)
     if(!resp) {
         res.send({success: false, err: 'Something went wrong'})
@@ -404,9 +405,9 @@ app.get('/getallthreads/:pid', async(req, res) => {
 })
 
 app.post('/donatetofact/:pid/:uid', async(req, res) => {
-    const postId = req.params.pid
+    const postId = parseInt(req.params.pid)
     const userAddr = await getUserInfo(req.params.uid)
-    const Amount = req.body.amount
+    const Amount = parseInt(req.body.amount)
     const reqbody = {
         amount: Amount,
         from: userAddr,
