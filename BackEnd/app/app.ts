@@ -145,6 +145,11 @@ async function addThread(hash: any, postId: any, publisherAddr: any){
     })
     return response.data.data[0].txHash
 }
+
+async function getAllThreads(pid: any){
+    const response = await scInstance.get('/getAllThreads/'+pid)                      
+    return response.data.data[0]["(uint256,uint256,address,uint256,uint256,string)[]"]
+}
 //Functions End
 
 
@@ -268,9 +273,10 @@ app.post('/createthread/:pid/:uid', async(req, res) => {
                 })
 })
 
-app.post('/getallthreads/:pid', async(req, res) => {
-    const threads = req.body.threads
-    const arr = JSON.parse(threads)
+
+app.get('/getallthreads/:pid', async(req, res) => {
+    const postId = req.params.pid
+    const arr = await getAllThreads(postId)
     let threadHash = []
     let threadIds = []
     let postIds = []
