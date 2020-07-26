@@ -417,6 +417,22 @@ contract FactCheck is ERC20 {
 
     //   return (_publisher,_hash,_donations,_upvotes);
     // }
+    
+    
+        function hasUserPurchased(uint postId, address user) public view returns(bool){
+        return facts[postId].hasUserPurchased[user];
+    }
+
+    
+    function purchasePost(uint postId, address publisher, address user) public returns(bool){
+        
+        transferFrom(user,address(this),20);
+        transferFrom(user, publisher, 80);
+        facts[postId].hasUserPurchased[user] = true;
+        return true; 
+        
+        
+    }
 
 
 
@@ -453,6 +469,19 @@ contract FactCheck is ERC20 {
           return p;
       }
 
+      //ignoring the value for postid in structure Thread1. 
+       function getAllThreads(uint postid) public view returns(Thread1[] memory) {
+        Thread1[] memory t =new Thread1[](facts[postid].threadCount);
+        for(uint i=0;i<facts[postid].threadCount;i++){
+            t[i].threadID=i;
+            t[i].publisher=facts[postid].threads[i].publisher;
+            t[i].donations=facts[postid].threads[i].donations;
+            t[i].upvotes=facts[postid].threads[i].upvotes;
+            t[i].ihash=facts[postid].threads[i].ipfsHash;
+        }
+        
+        return t;
+    }
 
 
 
