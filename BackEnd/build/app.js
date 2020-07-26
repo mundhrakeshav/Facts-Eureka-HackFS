@@ -346,6 +346,53 @@ function upvoteFact(reqbody) {
         });
     });
 }
+function donateFact(reqbody) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, scInstance('/donateToFact', {
+                        amount: reqbody.amount,
+                        from: reqbody.from,
+                        factId: reqbody.factId
+                    })];
+                case 1:
+                    response = _a.sent();
+                    if (response.data.success) {
+                        return [2 /*return*/, response.data.data[0].txHash];
+                    }
+                    else {
+                        return [2 /*return*/, false];
+                    }
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function donateThread(reqbody) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, scInstance('/donateToThread', {
+                        amount: reqbody.amount,
+                        from: reqbody.from,
+                        factId: reqbody.factId,
+                        threadId: reqbody.threadId
+                    })];
+                case 1:
+                    response = _a.sent();
+                    if (response.data.success) {
+                        return [2 /*return*/, response.data.data[0].txHash];
+                    }
+                    else {
+                        return [2 /*return*/, false];
+                    }
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
 //Functions End
 //Routes Starts
 app.get('/generatekeys/:id', function (req, res) {
@@ -680,6 +727,64 @@ app.get('/getallthreads/:pid', function (req, res) { return __awaiter(void 0, vo
                     threadHash.push(arr[i][5]);
                 }
                 getAllThreadsData(threadHash, threadIds, postIds, publisherAddresses, donations, upvotes);
+                return [2 /*return*/];
+        }
+    });
+}); });
+app.post('/donatetofact/:pid/:uid', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var postId, userAddr, Amount, reqbody, resp;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                postId = req.params.pid;
+                return [4 /*yield*/, getUserInfo(req.params.uid)];
+            case 1:
+                userAddr = _a.sent();
+                Amount = req.body.amount;
+                reqbody = {
+                    amount: Amount,
+                    from: userAddr,
+                    factId: postId
+                };
+                return [4 /*yield*/, donateFact(reqbody)];
+            case 2:
+                resp = _a.sent();
+                if (!resp) {
+                    res.send({ success: false, error: 'Something went wront' });
+                }
+                else {
+                    res.send({ success: true, txHash: resp });
+                }
+                return [2 /*return*/];
+        }
+    });
+}); });
+app.post('/donatetothread/:pid/:tid/:uid', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var postId, ThreadId, userAddr, Amount, reqbody, resp;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                postId = req.params.pid;
+                ThreadId = req.params.tid;
+                return [4 /*yield*/, getUserInfo(req.params.uid)];
+            case 1:
+                userAddr = _a.sent();
+                Amount = req.body.amount;
+                reqbody = {
+                    amount: Amount,
+                    from: userAddr,
+                    factId: postId,
+                    threadId: ThreadId
+                };
+                return [4 /*yield*/, donateThread(reqbody)];
+            case 2:
+                resp = _a.sent();
+                if (!resp) {
+                    res.send({ success: false, error: 'Something went wront' });
+                }
+                else {
+                    res.send({ success: true, txHash: resp });
+                }
                 return [2 /*return*/];
         }
     });

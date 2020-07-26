@@ -179,6 +179,34 @@ async function upvoteFact(reqbody: any){
 }
 
 
+async function donateFact(reqbody: any){
+    const response = await scInstance('/donateToFact', {
+        amount: reqbody.amount,
+        from: reqbody.from,
+        factId: reqbody.factId
+    })
+    if(response.data.success){
+        return response.data.data[0].txHash
+    } else {
+        return false
+    }
+
+}
+
+async function donateThread(reqbody: any){
+    const response = await scInstance('/donateToThread', {
+        amount: reqbody.amount,
+        from: reqbody.from,
+        factId: reqbody.factId,
+        threadId: reqbody.threadId
+    })
+    if(response.data.success){
+        return response.data.data[0].txHash
+    } else {
+        return false
+    }
+}
+
 //Functions End
 
 
@@ -372,6 +400,43 @@ app.get('/getallthreads/:pid', async(req, res) => {
             threads.push(resp.instance)
         }
         res.send(threads)
+    }
+})
+
+app.post('/donatetofact/:pid/:uid', async(req, res) => {
+    const postId = req.params.pid
+    const userAddr = await getUserInfo(req.params.uid)
+    const Amount = req.body.amount
+    const reqbody = {
+        amount: Amount,
+        from: userAddr,
+        factId: postId
+    }
+    const resp = await donateFact(reqbody)
+    if(!resp){
+        res.send({success: false, error: 'Something went wront'})
+    } else {
+        res.send({success: true, txHash: resp})
+    }
+})
+
+
+app.post('/donatetothread/:pid/:tid/:uid', async(req, res) => {
+    const postId = req.params.pid
+    const ThreadId = req.params.tid
+    const userAddr = await getUserInfo(req.params.uid)
+    const Amount = req.body.amount
+    const reqbody = {
+        amount: Amount,
+        from: userAddr,
+        factId: postId,
+        threadId: ThreadId
+    }
+    const resp = await donateThread(reqbody)
+    if(!resp){
+        res.send({success: false, error: 'Something went wront'})
+    } else {
+        res.send({success: true, txHash: resp})
     }
 })
 //Routes End
