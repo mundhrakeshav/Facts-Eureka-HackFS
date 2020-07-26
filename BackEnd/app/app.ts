@@ -150,6 +150,35 @@ async function getAllThreads(pid: any){
     const response = await scInstance.get('/getAllThreads/'+pid)                      
     return response.data.data[0]["(uint256,uint256,address,uint256,uint256,string)[]"]
 }
+
+
+async function upvoteThread(reqbody: any){
+    const response = await scInstance.post('/upVoteFact', {
+        postID: reqbody.postID,
+        threadID: reqbody.threadID,
+        user: reqbody.user
+    })
+    if(response.data.success){
+        return response.data.data[0].txHash
+    } else {
+        return false
+    }
+}
+
+
+async function upvoteFact(reqbody: any){
+    const response = await scInstance.post('/upVoteFact', {
+        postID: reqbody.postID,
+        user: reqbody.user
+    })
+    if(response.data.success){
+        return response.data.data[0].txHash
+    } else {
+        return false
+    }
+}
+
+
 //Functions End
 
 
@@ -271,6 +300,38 @@ app.post('/createthread/:pid/:uid', async(req, res) => {
                     const threadHash = await addThread(resp,postId,userAddr)
                     res.send({success: 'true', postID: postId, threadTxHash: threadHash})
                 })
+})
+
+app.post('/upvotefact/:pid/:uid', async(req, res) => {
+    const postId = req.params.pid
+    const userAddr = await getUserInfo(req.params.uid)
+    const reqbody = {
+        postID: postId,
+        user: userAddr
+    }
+    const resp = await upvoteFact(reqbody)
+    if(!resp) {
+        res.send({success: false, err: 'Something went wrong'})
+    } else {
+        res.send({success: true, txHash: resp})
+    }
+})
+
+app.post('/upvotethread/:pid/:tid/:uid', async(req, res) => {
+    const postId = req.params.pid
+    const threadId = req.params.tid
+    const userAddr = await getUserInfo(req.params.uid)
+    const reqbody = {
+        postID: postId,
+        threadID: threadId,
+        user: userAddr
+    }
+    const resp = await upvoteThread(reqbody)
+    if(!resp) {
+        res.send({success: false, err: 'Something went wrong'})
+    } else {
+        res.send({success: true, txHash: resp})
+    }
 })
 
 

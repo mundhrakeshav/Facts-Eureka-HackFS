@@ -288,6 +288,64 @@ function addThread(hash, postId, publisherAddr) {
         });
     });
 }
+function getAllThreads(pid) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, scInstance.get('/getAllThreads/' + pid)];
+                case 1:
+                    response = _a.sent();
+                    return [2 /*return*/, response.data.data[0]["(uint256,uint256,address,uint256,uint256,string)[]"]];
+            }
+        });
+    });
+}
+function upvoteThread(reqbody) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, scInstance.post('/upVoteFact', {
+                        postID: reqbody.postID,
+                        threadID: reqbody.threadID,
+                        user: reqbody.user
+                    })];
+                case 1:
+                    response = _a.sent();
+                    if (response.data.success) {
+                        return [2 /*return*/, response.data.data[0].txHash];
+                    }
+                    else {
+                        return [2 /*return*/, false];
+                    }
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function upvoteFact(reqbody) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, scInstance.post('/upVoteFact', {
+                        postID: reqbody.postID,
+                        user: reqbody.user
+                    })];
+                case 1:
+                    response = _a.sent();
+                    if (response.data.success) {
+                        return [2 /*return*/, response.data.data[0].txHash];
+                    }
+                    else {
+                        return [2 /*return*/, false];
+                    }
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
 //Functions End
 //Routes Starts
 app.get('/generatekeys/:id', function (req, res) {
@@ -506,7 +564,61 @@ app.post('/createthread/:pid/:uid', function (req, res) { return __awaiter(void 
         }
     });
 }); });
-app.post('/getallthreads/:pid', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+app.post('/upvotefact/:pid/:uid', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var postId, userAddr, reqbody, resp;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                postId = req.params.pid;
+                return [4 /*yield*/, getUserInfo(req.params.uid)];
+            case 1:
+                userAddr = _a.sent();
+                reqbody = {
+                    postID: postId,
+                    user: userAddr
+                };
+                return [4 /*yield*/, upvoteFact(reqbody)];
+            case 2:
+                resp = _a.sent();
+                if (!resp) {
+                    res.send({ success: false, err: 'Something went wrong' });
+                }
+                else {
+                    res.send({ success: true, txHash: resp });
+                }
+                return [2 /*return*/];
+        }
+    });
+}); });
+app.post('/upvotethread/:pid/:tid/:uid', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var postId, threadId, userAddr, reqbody, resp;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                postId = req.params.pid;
+                threadId = req.params.tid;
+                return [4 /*yield*/, getUserInfo(req.params.uid)];
+            case 1:
+                userAddr = _a.sent();
+                reqbody = {
+                    postID: postId,
+                    threadID: threadId,
+                    user: userAddr
+                };
+                return [4 /*yield*/, upvoteThread(reqbody)];
+            case 2:
+                resp = _a.sent();
+                if (!resp) {
+                    res.send({ success: false, err: 'Something went wrong' });
+                }
+                else {
+                    res.send({ success: true, txHash: resp });
+                }
+                return [2 /*return*/];
+        }
+    });
+}); });
+app.get('/getallthreads/:pid', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     function getAllThreadsData(threadHash, threadIds, postIds, publisherAddr, donations, upvotes) {
         return __awaiter(this, void 0, void 0, function () {
             var auth, client, threads, x, resp;
@@ -545,26 +657,31 @@ app.post('/getallthreads/:pid', function (req, res) { return __awaiter(void 0, v
             });
         });
     }
-    var threads, arr, threadHash, threadIds, postIds, publisherAddresses, donations, upvotes, i;
+    var postId, arr, threadHash, threadIds, postIds, publisherAddresses, donations, upvotes, i;
     return __generator(this, function (_a) {
-        threads = req.body.threads;
-        arr = JSON.parse(threads);
-        threadHash = [];
-        threadIds = [];
-        postIds = [];
-        publisherAddresses = [];
-        donations = [];
-        upvotes = [];
-        for (i = 0; i < arr.length; i++) {
-            threadIds.push(arr[i][0]);
-            postIds.push(arr[i][1]);
-            publisherAddresses.push(arr[i][2]);
-            donations.push(arr[i][3]);
-            upvotes.push(arr[i][4]);
-            threadHash.push(arr[i][5]);
+        switch (_a.label) {
+            case 0:
+                postId = req.params.pid;
+                return [4 /*yield*/, getAllThreads(postId)];
+            case 1:
+                arr = _a.sent();
+                threadHash = [];
+                threadIds = [];
+                postIds = [];
+                publisherAddresses = [];
+                donations = [];
+                upvotes = [];
+                for (i = 0; i < arr.length; i++) {
+                    threadIds.push(arr[i][0]);
+                    postIds.push(arr[i][1]);
+                    publisherAddresses.push(arr[i][2]);
+                    donations.push(arr[i][3]);
+                    upvotes.push(arr[i][4]);
+                    threadHash.push(arr[i][5]);
+                }
+                getAllThreadsData(threadHash, threadIds, postIds, publisherAddresses, donations, upvotes);
+                return [2 /*return*/];
         }
-        getAllThreadsData(threadHash, threadIds, postIds, publisherAddresses, donations, upvotes);
-        return [2 /*return*/];
     });
 }); });
 //Routes End
