@@ -207,6 +207,26 @@ async function donateThread(reqbody: any){
     }
 }
 
+
+async function getBalance(addr: any){
+    const response = await scInstance.get('/balanceOf/'+addr)
+    return response.data.data[0].uint256
+}
+
+
+async function addBalance(addr: any, amt: any){
+    const response = await scInstance.post('/mint', {
+        account: addr,
+        amount: amt
+    })
+    if(response.data.success){
+        return response.data.data[0].txHash
+    } else {
+        return false
+    }
+}
+
+
 //Functions End
 
 
@@ -436,6 +456,24 @@ app.post('/donatetothread/:pid/:tid/:uid', async(req, res) => {
     const resp = await donateThread(reqbody)
     if(!resp){
         res.send({success: false, error: 'Something went wront'})
+    } else {
+        res.send({success: true, txHash: resp})
+    }
+})
+
+app.get('/getaccountdetails/:uid', async(req, res) => {
+    const userAddr = await getUserInfo(req.params.uid)
+    const balance = await getBalance(userAddr)
+    res.send({userAddress: userAddr, balance: balance})
+})
+
+
+app.post('/buytokens/:uid', async(req, res) => {
+    const userAddr = await getUserInfo(req.params.uid)
+    const amount = req.body.amount
+    const resp = await addBalance(userAddr, amount)
+    if(!resp){
+        res.send({success: false, error: 'Something went wrong'})
     } else {
         res.send({success: true, txHash: resp})
     }

@@ -393,6 +393,41 @@ function donateThread(reqbody) {
         });
     });
 }
+function getBalance(addr) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, scInstance.get('/balanceOf/' + addr)];
+                case 1:
+                    response = _a.sent();
+                    return [2 /*return*/, response.data.data[0].uint256];
+            }
+        });
+    });
+}
+function addBalance(addr, amt) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, scInstance.post('/mint', {
+                        account: addr,
+                        amount: amt
+                    })];
+                case 1:
+                    response = _a.sent();
+                    if (response.data.success) {
+                        return [2 /*return*/, response.data.data[0].txHash];
+                    }
+                    else {
+                        return [2 /*return*/, false];
+                    }
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
 //Functions End
 //Routes Starts
 app.get('/generatekeys/:id', function (req, res) {
@@ -782,6 +817,42 @@ app.post('/donatetothread/:pid/:tid/:uid', function (req, res) { return __awaite
                 resp = _a.sent();
                 if (!resp) {
                     res.send({ success: false, error: 'Something went wront' });
+                }
+                else {
+                    res.send({ success: true, txHash: resp });
+                }
+                return [2 /*return*/];
+        }
+    });
+}); });
+app.get('/getaccountdetails/:uid', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var userAddr, balance;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, getUserInfo(req.params.uid)];
+            case 1:
+                userAddr = _a.sent();
+                return [4 /*yield*/, getBalance(userAddr)];
+            case 2:
+                balance = _a.sent();
+                res.send({ userAddress: userAddr, balance: balance });
+                return [2 /*return*/];
+        }
+    });
+}); });
+app.post('/buytokens/:uid', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var userAddr, amount, resp;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, getUserInfo(req.params.uid)];
+            case 1:
+                userAddr = _a.sent();
+                amount = req.body.amount;
+                return [4 /*yield*/, addBalance(userAddr, amount)];
+            case 2:
+                resp = _a.sent();
+                if (!resp) {
+                    res.send({ success: false, error: 'Something went wrong' });
                 }
                 else {
                     res.send({ success: true, txHash: resp });
