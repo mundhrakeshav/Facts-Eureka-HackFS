@@ -8,12 +8,16 @@ import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
-class AddPost extends StatefulWidget {
+class AddThread extends StatefulWidget {
+  final int postID;
+
+  AddThread({@required this.postID});
+
   @override
-  _AddPostState createState() => _AddPostState();
+  _AddThreadState createState() => _AddThreadState();
 }
 
-class _AddPostState extends State<AddPost> {
+class _AddThreadState extends State<AddThread> {
   final TextEditingController _titleController = TextEditingController();
 
   final TextEditingController _bodyController = TextEditingController();
@@ -21,8 +25,6 @@ class _AddPostState extends State<AddPost> {
   String get _title => _titleController.text;
 
   String get _body => _bodyController.text;
-
-  bool _isLoading = false;
 
   File _image;
 
@@ -110,105 +112,6 @@ class _AddPostState extends State<AddPost> {
     // print(imageBytesList);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: appbarMain,
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : SingleChildScrollView(
-              child: Container(
-                padding: EdgeInsets.all(MediaQuery.of(context).size.width * .1),
-                child: Form(
-                  child: Column(
-                    children: [
-                      Container(
-                        child: Text(
-                          "Add a new Post",
-                          style: TextStyle(
-                              fontSize: 30,
-                              fontFamily: "Roboto",
-                              fontWeight: FontWeight.w700),
-                        ),
-                        margin: EdgeInsets.all(20),
-                      ),
-                      titleInput(),
-                      bodyInput(),
-                      _image != null
-                          ? Container(
-                              margin: EdgeInsets.all(10),
-                              padding: EdgeInsets.all(20),
-                              child: Image.file(_image),
-                            )
-                          : Container(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            children: [
-                              FloatingActionButton.extended(
-                                heroTag: "uploadImage",
-                                backgroundColor: Colors.white.withOpacity(.9),
-                                onPressed: _chooseViaGallery,
-                                label: Text("Upload Image"),
-                                icon: Icon(Icons.image),
-                              ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              FloatingActionButton.extended(
-                                heroTag: "ClickImage",
-                                backgroundColor: Colors.white.withOpacity(.9),
-                                onPressed: _chooseViaCamera,
-                                label: Text("Click Image"),
-                                icon: Icon(Icons.camera),
-                              )
-                            ],
-                          ),
-                          FloatingActionButton(
-                            heroTag: "Send",
-                            backgroundColor: Colors.white.withOpacity(.9),
-                            onPressed: () async {
-                              setState(() {
-                                _isLoading = true;
-                              });
-
-                              http.Response resp = await http.post(
-                                ngrokAddress +
-                                    "/addpost/${CurrentUser.user.uid}",
-                                body: {
-                                  "title": _title,
-                                  "content": _body,
-                                  "image": _image.readAsBytesSync().toString(),
-                                },
-                              );
-                              _titleController.clear();
-                              _bodyController.clear();
-                              setState(() {
-                                _image = null;
-                              });
-
-                              print(_title);
-                              print(_body);
-                              print(resp.body);
-                              setState(() {
-                                _isLoading = false;
-                              });
-                            },
-                            child: Icon(Icons.send),
-                          )
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            ),
-    );
-  }
-
   TextField bodyInput() {
     return TextField(
       controller: _bodyController,
@@ -246,6 +149,93 @@ class _AddPostState extends State<AddPost> {
       maxLines: 5,
       minLines: 1,
       style: TextStyle(fontSize: 25),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: appbarMain,
+      body: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.all(MediaQuery.of(context).size.width * .1),
+          child: Form(
+            child: Column(
+              children: [
+                Container(
+                  child: Text(
+                    "Add a new Thread",
+                    style: TextStyle(
+                        fontSize: 30,
+                        fontFamily: "Roboto",
+                        fontWeight: FontWeight.w700),
+                  ),
+                  margin: EdgeInsets.all(20),
+                ),
+                titleInput(),
+                bodyInput(),
+                _image != null
+                    ? Container(
+                        margin: EdgeInsets.all(10),
+                        padding: EdgeInsets.all(20),
+                        child: Image.file(_image),
+                      )
+                    : Container(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      children: [
+                        FloatingActionButton.extended(
+                          heroTag: "uploadImage",
+                          backgroundColor: Colors.white.withOpacity(.9),
+                          onPressed: _chooseViaGallery,
+                          label: Text("Upload Image"),
+                          icon: Icon(Icons.image),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        FloatingActionButton.extended(
+                          heroTag: "ClickImage",
+                          backgroundColor: Colors.white.withOpacity(.9),
+                          onPressed: _chooseViaCamera,
+                          label: Text("Click Image"),
+                          icon: Icon(Icons.camera),
+                        )
+                      ],
+                    ),
+                    FloatingActionButton(
+                      heroTag: "Send",
+                      backgroundColor: Colors.white.withOpacity(.9),
+                      onPressed: () async {
+                        http.Response resp = await http.post(
+                          ngrokAddress +
+                              "/createthread/${widget.postID}/${CurrentUser.user.uid}",
+                          body: {
+                            "title": _title,
+                            "content": _body,
+                            "image": _image.readAsBytesSync().toString(),
+                          },
+                        );
+                        _titleController.clear();
+                        _bodyController.clear();
+                        setState(() {
+                          _image = null;
+                        });
+                        print(_title);
+                        print(_body);
+                        print(resp.body);
+                      },
+                      child: Icon(Icons.send),
+                    )
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

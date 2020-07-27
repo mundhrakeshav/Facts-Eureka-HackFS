@@ -1,12 +1,12 @@
 import 'dart:convert';
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:facts/Providers/homeScreenProvider.dart';
+import 'package:facts/Screens/AddThread.dart';
+import 'package:facts/Screens/AllThreads.dart';
 import 'package:facts/Services/CurrentUser.dart';
 import 'package:facts/Widgets/AppbarMain.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
 import 'ngrok.dart';
 
 class DetailedPost extends StatefulWidget {
@@ -24,7 +24,6 @@ class _DetailedPostState extends State<DetailedPost> {
 
   getHasUserPurchased() async {
     print(widget.fact.postID);
-    // print(CurrentUser.user.uid);
     http.Response response = await http.get(ngrokAddress +
         "/haspurchased/" +
         widget.fact.postID.toString() +
@@ -41,13 +40,22 @@ class _DetailedPostState extends State<DetailedPost> {
   @override
   void initState() {
     getHasUserPurchased();
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appbarMain,
+      appBar: AppBar(
+        title: Text(
+          "TheFacts",
+          style: TextStyle(
+            fontFamily: "Playfair Display",
+            fontSize: 30,
+          ),
+        ),
+      ),
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(),
@@ -81,14 +89,33 @@ class _DetailedPostState extends State<DetailedPost> {
             ButtonBar(
               children: [
                 FlatButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AllThreads(
+                          postId: widget.fact.postID,
+                        ),
+                      ),
+                    );
+                  },
                   icon: Icon(Icons.details),
                   label: Text("View Full Thread"),
                 ),
                 FlatButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddThread(
+                          postID: widget.fact.postID,
+                        ),
+                        fullscreenDialog: true,
+                      ),
+                    );
+                  },
                   icon: Icon(Icons.edit),
-                  label: Text("Add new Post"),
+                  label: Text("Add to Thread"),
                 ),
               ],
             ),

@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:typed_data';
-
 import 'package:facts/Screens/ngrok.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 class HomeScreenProvider extends ChangeNotifier {
   List<Fact> facts = [];
+
   bool isLoading = true;
 
   HomeScreenProvider() {
@@ -21,7 +20,6 @@ class HomeScreenProvider extends ChangeNotifier {
 
     for (var fact in data) {
       List<int> image = [];
-
       List tempImage = jsonDecode(fact["image"]);
 
       for (var item in tempImage) {
@@ -37,7 +35,6 @@ class HomeScreenProvider extends ChangeNotifier {
         postID: fact["postId"],
         image: Uint8List.fromList(image),
       );
-      print(_fact.postID);
       facts.add(_fact);
     }
     isLoading = false;
@@ -61,6 +58,29 @@ class Fact {
     @required this.title,
     @required this.body,
     this.image,
+    @required this.threads,
+    @required this.upvotes,
+    @required this.postID,
+  });
+}
+
+class Thread {
+  int postID;
+  int threadID;
+
+  String publisher;
+  String title;
+  Uint8List image;
+  String body;
+  int upvotes;
+  List<dynamic> threads;
+
+  Thread({
+    @required this.publisher,
+    @required this.title,
+    @required this.body,
+    this.image,
+    @required this.threadID,
     @required this.threads,
     @required this.upvotes,
     @required this.postID,

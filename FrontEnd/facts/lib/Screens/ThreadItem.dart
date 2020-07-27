@@ -1,27 +1,23 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:facts/Providers/homeScreenProvider.dart';
-import 'package:facts/Screens/DetailedPost.dart';
+import 'package:facts/Screens/DetailedThread.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:facts/Providers/homeScreenProvider.dart';
 
-class PostListItem extends StatelessWidget {
-  final int index;
+class ThreadItem extends StatelessWidget {
+  final Thread thread;
 
-  PostListItem({
-    @required this.index,
-  });
+  ThreadItem({@required this.thread});
 
   @override
   Widget build(BuildContext context) {
-    HomeScreenProvider _factProvider = Provider.of<HomeScreenProvider>(context);
-
     return InkWell(
       onTap: () {
         Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  DetailedPost(fact: _factProvider.facts[index]),
+              builder: (context) => DetailedThread(
+                thread: thread,
+              ),
             ));
       },
       splashColor: Colors.black54,
@@ -35,7 +31,7 @@ class PostListItem extends StatelessWidget {
                   Flexible(
                       flex: 2,
                       child: AutoSizeText(
-                        _factProvider.facts[index].title.toUpperCase(),
+                        thread.title.toUpperCase(),
                         maxLines: 4,
                         style: TextStyle(
                           fontSize: 15,
@@ -49,7 +45,7 @@ class PostListItem extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Image.memory(
-                        _factProvider.facts[index].image,
+                        thread.image,
                         width: MediaQuery.of(context).size.width * .3,
                       ),
                     ),
@@ -65,24 +61,17 @@ class PostListItem extends StatelessWidget {
                   Column(
                     children: [
                       Text(
-                        "Total Upvotes: " +
-                            _factProvider.facts[index].upvotes.toString(),
+                        "Total Upvotes: " + thread.upvotes.toString(),
                         style: TextStyle(
                           fontFamily: "Abel",
                         ),
-                      ),
-                      Text(
-                        "Total Threads:" +
-                            _factProvider.facts[index].threads.length
-                                .toString(),
-                        style: TextStyle(fontFamily: "Abel"),
                       ),
                     ],
                   ),
                   FlatButton.icon(
                     onPressed: () {},
                     icon: (Icon(Icons.payment)),
-                    label: Text("Donate to this post"),
+                    label: Text("Donate to this thread"),
                   )
                 ],
               )
