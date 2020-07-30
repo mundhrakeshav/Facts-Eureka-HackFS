@@ -417,17 +417,16 @@ contract FactCheck is ERC20 {
 
     //   return (_publisher,_hash,_donations,_upvotes);
     // }
-    
-    
-        function hasUserPurchased(uint postId, address user) public view returns(bool){
+
+
+    function hasUserPurchased(uint postId, address user) public view returns(bool){
         return facts[postId].hasUserPurchased[user];
     }
 
     
     function purchasePost(uint postId, address publisher, address user) public returns(bool){
         
-        transferFrom(user,address(this),20);
-        transferFrom(user, publisher, 80);
+         transferFrom(user, publisher, 100);
         facts[postId].hasUserPurchased[user] = true;
         return true; 
         
@@ -437,6 +436,7 @@ contract FactCheck is ERC20 {
 
 
       struct Posts{
+          uint postID;
           address publisher;
           uint donations;
           uint upvotes;
@@ -444,6 +444,8 @@ contract FactCheck is ERC20 {
           Thread1[] t;
       }
       struct Thread1{
+          uint threadID;
+          uint postID;
           address publisher;
           uint donations;
           uint upvotes;
@@ -453,12 +455,15 @@ contract FactCheck is ERC20 {
       function getAllPosts() public view  returns(Posts[] memory){
           Posts[] memory p=new Posts[](postCount);
           for(uint i=0;i<postCount;i++){
+              p[i].postID = i;
               p[i].publisher=facts[i].publisher;
               p[i].donations=facts[i].donations;
               p[i].upvotes=facts[i].upvotes;
               p[i].ihash=facts[i].ipfsHash;
               p[i].t=new Thread1[](facts[i].threadCount);
               for(uint j=0;j<facts[i].threadCount;j++){
+                  p[i].t[j].postID = i;
+                  p[i].t[j].threadID=j;
                   p[i].t[j].publisher=facts[i].threads[j].publisher;
                   p[i].t[j].donations=facts[i].threads[j].donations;
                   p[i].t[j].upvotes=facts[i].threads[j].upvotes;
@@ -468,12 +473,12 @@ contract FactCheck is ERC20 {
 
           return p;
       }
-
-      //ignoring the value for postid in structure Thread1. 
-       function getAllThreads(uint postid) public view returns(Thread1[] memory) {
+      
+      function getAllThreads(uint postid) public view returns(Thread1[] memory) {
         Thread1[] memory t =new Thread1[](facts[postid].threadCount);
         for(uint i=0;i<facts[postid].threadCount;i++){
             t[i].threadID=i;
+            t[i].postID=postid;
             t[i].publisher=facts[postid].threads[i].publisher;
             t[i].donations=facts[postid].threads[i].donations;
             t[i].upvotes=facts[postid].threads[i].upvotes;
@@ -482,7 +487,4 @@ contract FactCheck is ERC20 {
         
         return t;
     }
-
-
-
 }
