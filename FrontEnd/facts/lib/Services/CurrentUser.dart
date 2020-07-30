@@ -2,5 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class CurrentUser {
   static FirebaseUser user;
-  static String balance;
+  static int balance = 0;
+  static String userAddress = "";
 }

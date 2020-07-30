@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:facts/Providers/homeScreenProvider.dart';
 import 'package:facts/Screens/DetailedPost.dart';
+import 'package:facts/Screens/DonateBottomSheets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -80,7 +81,16 @@ class PostListItem extends StatelessWidget {
                     ],
                   ),
                   FlatButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Scaffold.of(context)
+                          .showBottomSheet((context) => BottomSheet(
+                                enableDrag: true,
+                                builder: (context) => DonateToPostBottomSheet(
+                                  postID: _factProvider.facts[index].postID,
+                                ),
+                                onClosing: () => {Navigator.pop(context)},
+                              ));
+                    },
                     icon: (Icon(Icons.payment)),
                     label: Text("Donate to this post"),
                   )

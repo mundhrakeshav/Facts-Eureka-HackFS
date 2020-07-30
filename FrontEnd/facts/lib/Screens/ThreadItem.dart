@@ -1,12 +1,16 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:facts/Screens/DetailedThread.dart';
+import 'package:facts/Screens/DonateBottomSheets.dart';
 import 'package:flutter/material.dart';
 import 'package:facts/Providers/homeScreenProvider.dart';
 
 class ThreadItem extends StatelessWidget {
   final Thread thread;
-
-  ThreadItem({@required this.thread});
+  final int postID;
+  ThreadItem({
+    @required this.thread,
+    @required this.postID,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +20,7 @@ class ThreadItem extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => DetailedThread(
+                postID: postID,
                 thread: thread,
               ),
             ));
@@ -69,7 +74,17 @@ class ThreadItem extends StatelessWidget {
                     ],
                   ),
                   FlatButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Scaffold.of(context)
+                          .showBottomSheet((context) => BottomSheet(
+                                enableDrag: true,
+                                builder: (context) => DonateToThreadBottomSheet(
+                                  postID: postID,
+                                  threadID: thread.threadID,
+                                ),
+                                onClosing: () => {Navigator.pop(context)},
+                              ));
+                    },
                     icon: (Icon(Icons.payment)),
                     label: Text("Donate to this thread"),
                   )

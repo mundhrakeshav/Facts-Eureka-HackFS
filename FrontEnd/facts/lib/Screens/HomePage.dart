@@ -27,15 +27,20 @@ class _HomePageState extends State<HomePage> {
               child: CircularProgressIndicator(),
             )
           : Container(
-              child: ListView.separated(
-                itemBuilder: (context, index) {
-                  return PostListItem(
-                    index: index,
-                  );
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await _factProvider.getAllPosts();
                 },
-                itemCount: _factProvider.facts.length,
-                separatorBuilder: (context, index) => Divider(
-                  thickness: 2,
+                child: ListView.separated(
+                  itemBuilder: (context, index) {
+                    return PostListItem(
+                      index: index,
+                    );
+                  },
+                  itemCount: _factProvider.facts.length,
+                  separatorBuilder: (context, index) => Divider(
+                    thickness: 2,
+                  ),
                 ),
               ),
               padding: EdgeInsets.all(10),

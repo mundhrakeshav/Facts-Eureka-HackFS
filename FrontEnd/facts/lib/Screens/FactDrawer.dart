@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:facts/Screens/AddPost.dart';
 import 'package:facts/Services/Auth.dart';
 import 'package:facts/Services/CurrentUser.dart';
@@ -37,12 +38,17 @@ class FactDrawer extends StatelessWidget {
               ),
               decoration: BoxDecoration(color: Colors.black54),
               margin: EdgeInsets.all(10),
-              accountName: Text(
-                "@" + CurrentUser.user.email.split("@")[0],
-                style: TextStyle(
+              accountName: Padding(
+                padding: EdgeInsets.all(3.0),
+                child: AutoSizeText(
+                  CurrentUser.userAddress,
+                  maxFontSize: 18,
+                  overflow: TextOverflow.visible,
+                  style: TextStyle(
                     fontFamily: "Roboto",
                     fontWeight: FontWeight.w300,
-                    fontSize: 18),
+                  ),
+                ),
               ),
               accountEmail: Text(
                 CurrentUser.user.email != null ? CurrentUser.user.email : "",
@@ -52,6 +58,20 @@ class FactDrawer extends StatelessWidget {
                   fontSize: 13,
                 ),
               ),
+            ),
+            Container(
+              padding: EdgeInsets.fromLTRB(10, 20, 20, 5),
+              color: Colors.black54,
+              child: Row(
+                children: [
+                  Text(
+                    "Balance:" + CurrentUser.balance.toString(),
+                    style: TextStyle(color: Colors.white, fontSize: 30),
+                  ),
+                ],
+              ),
+              height: MediaQuery.of(context).size.height * .09,
+              margin: EdgeInsets.symmetric(horizontal: 20),
             ),
             ListTile(
               title: Text(

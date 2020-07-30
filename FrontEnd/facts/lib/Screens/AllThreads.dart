@@ -19,6 +19,7 @@ class _AllThreadsState extends State<AllThreads> {
   List<Thread> threads = [];
   bool _isLoading = true;
   getAllThreads() async {
+    threads.clear();
     http.Response response = await http.get(
       ngrokAddress + "/getallthreads/" + widget.postId.toString(),
     );
@@ -44,11 +45,10 @@ class _AllThreadsState extends State<AllThreads> {
         image: Uint8List.fromList(image),
       );
       threads.add(_thread);
-
-      setState(() {
-        _isLoading = false;
-      });
     }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -66,13 +66,25 @@ class _AllThreadsState extends State<AllThreads> {
               child: CircularProgressIndicator(),
             )
           : Container(
-              child: ListView.separated(
-                itemBuilder: (context, index) => ThreadItem(
-                  thread: threads[index],
-                ),
-                separatorBuilder: (context, index) => Divider(),
-                itemCount: threads.length,
-              ),
+              child: threads.length == 0
+                  ? Center(
+                      child: Text("NO THREADS AVAILABLE ON THIS POST"),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () async {
+                        await getAllThreads();
+                      },
+                      child: ListView.separated(
+                        itemBuilder: (context, index) {
+                          return ThreadItem(
+                            postID: widget.postId,
+                            thread: threads[index],
+                          );
+                        },
+                        separatorBuilder: (context, index) => Divider(),
+                        itemCount: threads.length,
+                      ),
+                    ),
             ),
     );
   }

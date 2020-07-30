@@ -28,6 +28,8 @@ class _AddThreadState extends State<AddThread> {
 
   File _image;
 
+  bool _isLoading = false;
+
   final picker = ImagePicker();
 
   void _chooseViaGallery() async {
@@ -154,88 +156,97 @@ class _AddThreadState extends State<AddThread> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.postID);
     return Scaffold(
       appBar: appbarMain,
-      body: SingleChildScrollView(
-        child: Container(
-          padding: EdgeInsets.all(MediaQuery.of(context).size.width * .1),
-          child: Form(
-            child: Column(
-              children: [
-                Container(
-                  child: Text(
-                    "Add a new Thread",
-                    style: TextStyle(
-                        fontSize: 30,
-                        fontFamily: "Roboto",
-                        fontWeight: FontWeight.w700),
-                  ),
-                  margin: EdgeInsets.all(20),
-                ),
-                titleInput(),
-                bodyInput(),
-                _image != null
-                    ? Container(
-                        margin: EdgeInsets.all(10),
-                        padding: EdgeInsets.all(20),
-                        child: Image.file(_image),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.all(MediaQuery.of(context).size.width * .1),
+                child: Form(
+                  child: Column(
+                    children: [
+                      Container(
+                        child: Text(
+                          "Add a new Thread",
+                          style: TextStyle(
+                              fontSize: 30,
+                              fontFamily: "Roboto",
+                              fontWeight: FontWeight.w700),
+                        ),
+                        margin: EdgeInsets.all(20),
+                      ),
+                      titleInput(),
+                      bodyInput(),
+                      _image != null
+                          ? Container(
+                              margin: EdgeInsets.all(10),
+                              padding: EdgeInsets.all(20),
+                              child: Image.file(_image),
+                            )
+                          : Container(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            children: [
+                              FloatingActionButton.extended(
+                                heroTag: "uploadImage",
+                                backgroundColor: Colors.white.withOpacity(.9),
+                                onPressed: _chooseViaGallery,
+                                label: Text("Upload Image"),
+                                icon: Icon(Icons.image),
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              FloatingActionButton.extended(
+                                heroTag: "ClickImage",
+                                backgroundColor: Colors.white.withOpacity(.9),
+                                onPressed: _chooseViaCamera,
+                                label: Text("Click Image"),
+                                icon: Icon(Icons.camera),
+                              )
+                            ],
+                          ),
+                          FloatingActionButton(
+                            heroTag: "Send",
+                            backgroundColor: Colors.white.withOpacity(.9),
+                            onPressed: () async {
+                              setState(() {
+                                _isLoading = true;
+                              });
+                              http.Response resp = await http.post(
+                                ngrokAddress +
+                                    "/createthread/${widget.postID}/${CurrentUser.user.uid}",
+                                body: {
+                                  "title": _title,
+                                  "content": _body,
+                                  "image": _image.readAsBytesSync().toString(),
+                                },
+                              );
+                              _titleController.clear();
+                              _bodyController.clear();
+                              setState(() {
+                                _image = null;
+                                _isLoading = false;
+                              });
+                              print(_title);
+                              print(_body);
+                              print(resp.body);
+                            },
+                            child: Icon(Icons.send),
+                          )
+                        ],
                       )
-                    : Container(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      children: [
-                        FloatingActionButton.extended(
-                          heroTag: "uploadImage",
-                          backgroundColor: Colors.white.withOpacity(.9),
-                          onPressed: _chooseViaGallery,
-                          label: Text("Upload Image"),
-                          icon: Icon(Icons.image),
-                        ),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        FloatingActionButton.extended(
-                          heroTag: "ClickImage",
-                          backgroundColor: Colors.white.withOpacity(.9),
-                          onPressed: _chooseViaCamera,
-                          label: Text("Click Image"),
-                          icon: Icon(Icons.camera),
-                        )
-                      ],
-                    ),
-                    FloatingActionButton(
-                      heroTag: "Send",
-                      backgroundColor: Colors.white.withOpacity(.9),
-                      onPressed: () async {
-                        http.Response resp = await http.post(
-                          ngrokAddress +
-                              "/createthread/${widget.postID}/${CurrentUser.user.uid}",
-                          body: {
-                            "title": _title,
-                            "content": _body,
-                            "image": _image.readAsBytesSync().toString(),
-                          },
-                        );
-                        _titleController.clear();
-                        _bodyController.clear();
-                        setState(() {
-                          _image = null;
-                        });
-                        print(_title);
-                        print(_body);
-                        print(resp.body);
-                      },
-                      child: Icon(Icons.send),
-                    )
-                  ],
-                )
-              ],
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

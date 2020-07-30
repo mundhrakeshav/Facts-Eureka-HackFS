@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:facts/Screens/ngrok.dart';
+import 'package:facts/Services/CurrentUser.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,13 +9,20 @@ import 'package:http/http.dart' as http;
 class HomeScreenProvider extends ChangeNotifier {
   List<Fact> facts = [];
 
+  String userEthereumAddress;
+
+  int balance;
+
   bool isLoading = true;
 
   HomeScreenProvider() {
     getAllPosts();
+    getUserDetails();
   }
 
   getAllPosts() async {
+    facts.clear();
+
     http.Response response = await http.get(ngrokAddress + "/getallposts");
     var data = jsonDecode(response.body);
 
@@ -39,8 +47,17 @@ class HomeScreenProvider extends ChangeNotifier {
     }
     isLoading = false;
     facts = facts.reversed.toList();
-
+    print(facts.length);
     notifyListeners();
+  }
+
+  getUserDetails() async {
+    http.Response response = await http
+        .get(ngrokAddress + "/getaccountdetails/" + CurrentUser.user.uid);
+    var data = jsonDecode(response.body);
+
+    CurrentUser.balance = data["balance"];
+    CurrentUser.userAddress = data["userAddress"];
   }
 }
 
