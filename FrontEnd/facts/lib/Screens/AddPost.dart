@@ -1,12 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:facts/Screens/ngrok.dart';
 import 'package:facts/Services/CurrentUser.dart';
 import 'package:facts/Widgets/AppbarMain.dart';
+import 'package:facts/Widgets/SetDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AddPost extends StatefulWidget {
   @override
@@ -14,9 +17,12 @@ class AddPost extends StatefulWidget {
 }
 
 class _AddPostState extends State<AddPost> {
+  List<String> tags = [];
+
   final TextEditingController _titleController = TextEditingController();
 
   final TextEditingController _bodyController = TextEditingController();
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String get _title => _titleController.text;
 
@@ -113,95 +119,165 @@ class _AddPostState extends State<AddPost> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: appbarMain,
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : SingleChildScrollView(
-              child: Container(
-                padding: EdgeInsets.all(MediaQuery.of(context).size.width * .1),
-                child: Form(
-                  child: Column(
-                    children: [
-                      Container(
-                        child: Text(
-                          "Add a new Post",
-                          style: TextStyle(
-                              fontSize: 30,
-                              fontFamily: "Roboto",
-                              fontWeight: FontWeight.w700),
-                        ),
-                        margin: EdgeInsets.all(20),
-                      ),
-                      titleInput(),
-                      bodyInput(),
-                      _image != null
-                          ? Container(
-                              margin: EdgeInsets.all(10),
-                              padding: EdgeInsets.all(20),
-                              child: Image.file(_image),
-                            )
-                          : Container(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            children: [
-                              FloatingActionButton.extended(
-                                heroTag: "uploadImage",
-                                backgroundColor: Colors.white.withOpacity(.9),
-                                onPressed: _chooseViaGallery,
-                                label: Text("Upload Image"),
-                                icon: Icon(Icons.image),
-                              ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              FloatingActionButton.extended(
-                                heroTag: "ClickImage",
-                                backgroundColor: Colors.white.withOpacity(.9),
-                                onPressed: _chooseViaCamera,
-                                label: Text("Click Image"),
-                                icon: Icon(Icons.camera),
-                              )
-                            ],
+          : Builder(
+              builder: (context) => SingleChildScrollView(
+                child: Container(
+                  padding:
+                      EdgeInsets.all(MediaQuery.of(context).size.width * .1),
+                  child: Form(
+                    child: Column(
+                      children: [
+                        Container(
+                          child: Text(
+                            "Add a new Post",
+                            style: TextStyle(
+                                fontSize: 30,
+                                fontFamily: "Roboto",
+                                fontWeight: FontWeight.w700),
                           ),
-                          FloatingActionButton(
-                            heroTag: "Send",
-                            backgroundColor: Colors.white.withOpacity(.9),
-                            onPressed: () async {
-                              setState(() {
-                                _isLoading = true;
-                              });
+                          margin: EdgeInsets.all(20),
+                        ),
+                        titleInput(),
+                        bodyInput(),
+                        _image != null
+                            ? Container(
+                                margin: EdgeInsets.all(10),
+                                padding: EdgeInsets.all(20),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.image,
+                                      size: 20,
+                                    ),
+                                    Text("   Image Attached"),
+                                  ],
+                                ),
+                              )
+                            : Container(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              children: [
+                                FloatingActionButton.extended(
+                                  heroTag: "uploadImage",
+                                  backgroundColor: Colors.white.withOpacity(.9),
+                                  onPressed: _chooseViaGallery,
+                                  label: Text("Upload Image"),
+                                  icon: Icon(Icons.image),
+                                ),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                FloatingActionButton.extended(
+                                  heroTag: "ClickImage",
+                                  backgroundColor: Colors.white.withOpacity(.9),
+                                  onPressed: _chooseViaCamera,
+                                  label: Text("Click Image"),
+                                  icon: Icon(Icons.camera),
+                                )
+                              ],
+                            ),
+                            FloatingActionButton(
+                              heroTag: "Send",
+                              backgroundColor: Colors.white.withOpacity(.9),
+                              onPressed: () async {
+                                setState(() {
+                                  _isLoading = true;
+                                });
 
-                              http.Response resp = await http.post(
-                                ngrokAddress +
-                                    "/addpost/${CurrentUser.user.uid}",
-                                body: {
-                                  "title": _title,
-                                  "content": _body,
-                                  "image": _image.readAsBytesSync().toString(),
-                                },
-                              );
-                              _titleController.clear();
-                              _bodyController.clear();
-                              setState(() {
-                                _image = null;
-                              });
+                                http.Response resp = await http.post(
+                                  ngrokAddress +
+                                      "/addpost/${CurrentUser.user.uid}",
+                                  body: {
+                                    "title": _title,
+                                    "content": _body,
+                                    "image":
+                                        _image.readAsBytesSync().toString(),
+                                  },
+                                );
+                                var data = jsonDecode(resp.body);
+                                _titleController.clear();
+                                _bodyController.clear();
+                                setState(() {
+                                  _image = null;
+                                });
 
-                              print(_title);
-                              print(_body);
-                              print(resp.body);
-                              setState(() {
-                                _isLoading = false;
-                              });
-                            },
-                            child: Icon(Icons.send),
-                          )
-                        ],
-                      )
-                    ],
+                                // print(resp.body);
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                                _scaffoldKey.currentState
+                                    .showBottomSheet((context) => BottomSheet(
+                                          onClosing: () {},
+                                          builder: (context) => Container(
+                                            color: Colors.black54,
+                                            padding: EdgeInsets.all(30),
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                .6,
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                Text(
+                                                    "The Transaction has been made. Your post will be added in a while."),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceEvenly,
+                                                  children: [
+                                                    RaisedButton(
+                                                      color: Colors.white,
+                                                      child: Text(
+                                                        "OK",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.black),
+                                                      ),
+                                                      onPressed: () {
+                                                        Navigator.pop(context);
+                                                      },
+                                                    ),
+                                                    RaisedButton(
+                                                      color: Colors.white,
+                                                      child: Text(
+                                                        "Check your transaction",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.black),
+                                                      ),
+                                                      onPressed: () {
+                                                        launch(
+                                                            "https://goerli.etherscan.io/tx/${data["txnId"]}",
+                                                            enableJavaScript:
+                                                                true,
+                                                            forceWebView: true);
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ));
+                              },
+                              child: Icon(Icons.send),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),

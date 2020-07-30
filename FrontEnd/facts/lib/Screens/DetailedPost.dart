@@ -54,6 +54,25 @@ class _DetailedPostState extends State<DetailedPost> {
             fontSize: 30,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add_comment),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddThread(
+                    postID: widget.fact.postID,
+                  ),
+                  fullscreenDialog: true,
+                ),
+              );
+            },
+          ),
+          SizedBox(
+            width: 10,
+          ),
+        ],
       ),
       body: _isLoading
           ? Center(
@@ -107,31 +126,6 @@ class _DetailedPostState extends State<DetailedPost> {
                   ),
                   FlatButton.icon(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddThread(
-                            postID: widget.fact.postID,
-                          ),
-                          fullscreenDialog: true,
-                        ),
-                      );
-                    },
-                    icon: Icon(Icons.edit),
-                    label: Text("Add to Thread"),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  FlatButton.icon(
-                    onPressed: () {},
-                    icon: Icon(Icons.thumb_up),
-                    label: Text("Upvote"),
-                  ),
-                  FlatButton.icon(
-                    onPressed: () {
                       Scaffold.of(context)
                           .showBottomSheet((context) => BottomSheet(
                                 enableDrag: true,
@@ -145,7 +139,7 @@ class _DetailedPostState extends State<DetailedPost> {
                     label: Text("Donate to Post"),
                   ),
                 ],
-              )
+              ),
             ],
           )),
         ),

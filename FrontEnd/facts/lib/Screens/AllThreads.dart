@@ -27,6 +27,7 @@ class _AllThreadsState extends State<AllThreads> {
     var data = json.decode(response.body);
 
     for (var thread in data) {
+      print(thread["donations"]);
       List<int> image = [];
       List tempImage = jsonDecode(thread["image"]);
 
@@ -40,7 +41,7 @@ class _AllThreadsState extends State<AllThreads> {
         publisher: thread["user"],
         threads: thread["threads"],
         title: thread["title"],
-        upvotes: thread["upvotes"],
+        donations: thread["donations"],
         postID: thread["postId"],
         image: Uint8List.fromList(image),
       );

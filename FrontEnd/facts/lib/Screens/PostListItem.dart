@@ -66,8 +66,8 @@ class PostListItem extends StatelessWidget {
                   Column(
                     children: [
                       Text(
-                        "Total Upvotes: " +
-                            _factProvider.facts[index].upvotes.toString(),
+                        "Total Donations: " +
+                            _factProvider.facts[index].donations.toString(),
                         style: TextStyle(
                           fontFamily: "Abel",
                         ),

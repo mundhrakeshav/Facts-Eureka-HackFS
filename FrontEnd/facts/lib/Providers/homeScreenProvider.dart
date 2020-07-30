@@ -39,7 +39,7 @@ class HomeScreenProvider extends ChangeNotifier {
         publisher: fact["user"],
         threads: fact["threads"],
         title: fact["title"],
-        upvotes: fact["upvotes"],
+        donations: fact["donations"],
         postID: fact["postId"],
         image: Uint8List.fromList(image),
       );
@@ -58,6 +58,7 @@ class HomeScreenProvider extends ChangeNotifier {
 
     CurrentUser.balance = data["balance"];
     CurrentUser.userAddress = data["userAddress"];
+    notifyListeners();
   }
 }
 
@@ -67,7 +68,8 @@ class Fact {
   String title;
   Uint8List image;
   String body;
-  int upvotes;
+
+  int donations;
   List<dynamic> threads;
 
   Fact({
@@ -76,7 +78,7 @@ class Fact {
     @required this.body,
     this.image,
     @required this.threads,
-    @required this.upvotes,
+    @required this.donations,
     @required this.postID,
   });
 }
@@ -84,12 +86,11 @@ class Fact {
 class Thread {
   int postID;
   int threadID;
-
   String publisher;
   String title;
   Uint8List image;
   String body;
-  int upvotes;
+  int donations;
   List<dynamic> threads;
 
   Thread({
@@ -99,7 +100,7 @@ class Thread {
     this.image,
     @required this.threadID,
     @required this.threads,
-    @required this.upvotes,
+    @required this.donations,
     @required this.postID,
   });
 }

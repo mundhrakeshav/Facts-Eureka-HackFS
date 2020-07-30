@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:facts/Screens/ngrok.dart';
 import 'package:facts/Services/CurrentUser.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AddThread extends StatefulWidget {
   final int postID;
@@ -21,6 +23,7 @@ class _AddThreadState extends State<AddThread> {
   final TextEditingController _titleController = TextEditingController();
 
   final TextEditingController _bodyController = TextEditingController();
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String get _title => _titleController.text;
 
@@ -158,6 +161,7 @@ class _AddThreadState extends State<AddThread> {
   Widget build(BuildContext context) {
     print(widget.postID);
     return Scaffold(
+      key: _scaffoldKey,
       appBar: appbarMain,
       body: _isLoading
           ? Center(
@@ -228,6 +232,8 @@ class _AddThreadState extends State<AddThread> {
                                   "image": _image.readAsBytesSync().toString(),
                                 },
                               );
+                              var data = jsonDecode(resp.body);
+
                               _titleController.clear();
                               _bodyController.clear();
                               setState(() {
@@ -237,6 +243,58 @@ class _AddThreadState extends State<AddThread> {
                               print(_title);
                               print(_body);
                               print(resp.body);
+
+                              _scaffoldKey.currentState.showBottomSheet(
+                                (context) => BottomSheet(
+                                  onClosing: () {},
+                                  builder: (context) => Container(
+                                    color: Colors.black54,
+                                    padding: EdgeInsets.all(30),
+                                    height:
+                                        MediaQuery.of(context).size.height * .6,
+                                    width: MediaQuery.of(context).size.width,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Text(
+                                            "The Transaction has been made. Your Thread will be added in a while."),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            RaisedButton(
+                                              color: Colors.white,
+                                              child: Text(
+                                                "OK",
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                            RaisedButton(
+                                              color: Colors.white,
+                                              child: Text(
+                                                "Check your transaction",
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              onPressed: () {
+                                                launch(
+                                                    "https://goerli.etherscan.io/tx/${data["threadTxHash"]}",
+                                                    enableJavaScript: true,
+                                                    forceWebView: true);
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
                             },
                             child: Icon(Icons.send),
                           )

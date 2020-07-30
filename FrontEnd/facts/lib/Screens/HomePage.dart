@@ -30,6 +30,7 @@ class _HomePageState extends State<HomePage> {
               child: RefreshIndicator(
                 onRefresh: () async {
                   await _factProvider.getAllPosts();
+                  await _factProvider.getUserDetails();
                 },
                 child: ListView.separated(
                   itemBuilder: (context, index) {
