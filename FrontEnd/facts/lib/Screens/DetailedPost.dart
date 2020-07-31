@@ -140,6 +140,31 @@ class _DetailedPostState extends State<DetailedPost> {
                   ),
                 ],
               ),
+              Container(
+                margin: EdgeInsets.all(10),
+                padding: EdgeInsets.all(10),
+                width: double.infinity,
+                child: RaisedButton.icon(
+                  color: Colors.blueGrey,
+                  splashColor: Colors.black87,
+                  onPressed: () async {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    http.Response response = await http.post(
+                        "$ngrokAddress/upvotefact/${widget.fact.postID}/${CurrentUser.user.uid}");
+
+                    var data = jsonDecode(response.body);
+
+                    print(data);
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  },
+                  icon: Icon(Icons.thumb_up),
+                  label: Text("UpVote"),
+                ),
+              )
             ],
           )),
         ),

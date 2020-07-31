@@ -35,6 +35,7 @@ class HomeScreenProvider extends ChangeNotifier {
       }
 
       Fact _fact = Fact(
+        upvotes: fact["upvotes"],
         body: fact["content"],
         publisher: fact["user"],
         threads: fact["threads"],
@@ -68,7 +69,7 @@ class Fact {
   String title;
   Uint8List image;
   String body;
-
+  int upvotes;
   int donations;
   List<dynamic> threads;
 
@@ -77,6 +78,7 @@ class Fact {
     @required this.title,
     @required this.body,
     this.image,
+    @required this.upvotes,
     @required this.threads,
     @required this.donations,
     @required this.postID,
@@ -91,6 +93,7 @@ class Thread {
   Uint8List image;
   String body;
   int donations;
+  int upvotes;
   List<dynamic> threads;
 
   Thread({
@@ -98,6 +101,7 @@ class Thread {
     @required this.title,
     @required this.body,
     this.image,
+    @required this.upvotes,
     @required this.threadID,
     @required this.threads,
     @required this.donations,

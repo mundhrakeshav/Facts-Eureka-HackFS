@@ -1,16 +1,13 @@
-# facts
+# Facts
 
-A new Flutter project.
+### To build frontend
 
-## Getting Started
+1. Setup flutter on your device according to you platform, follow this [page.](https://flutter.dev/docs/get-started/install)
 
-This project is a starting point for a Flutter application.
+2. To verify flutter has been setup run `flutter doctor` command
 
-A few resources to get you started if this is your first Flutter project:
+3. Clone the project.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+4. Run `flutter pub get` to install all dependencies
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+5. Run `flutter run` to build app in debug mode.

@@ -36,6 +36,7 @@ class _AllThreadsState extends State<AllThreads> {
       }
 
       Thread _thread = Thread(
+        upvotes: thread["upvotes"],
         body: thread["content"],
         threadID: thread["threadId"],
         publisher: thread["user"],

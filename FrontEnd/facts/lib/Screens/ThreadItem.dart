@@ -66,7 +66,13 @@ class ThreadItem extends StatelessWidget {
                   Column(
                     children: [
                       Text(
-                        "Total donations: " + thread.donations.toString(),
+                        "Total Donations: " + thread.donations.toString(),
+                        style: TextStyle(
+                          fontFamily: "Abel",
+                        ),
+                      ),
+                      Text(
+                        "Total Upvotes: " + thread.upvotes.toString(),
                         style: TextStyle(
                           fontFamily: "Abel",
                         ),

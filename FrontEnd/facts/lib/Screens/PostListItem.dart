@@ -73,9 +73,14 @@ class PostListItem extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        "Total Threads:" +
+                        "Total Threads: " +
                             _factProvider.facts[index].threads.length
                                 .toString(),
+                        style: TextStyle(fontFamily: "Abel"),
+                      ),
+                      Text(
+                        "Total Upvotes: " +
+                            _factProvider.facts[index].upvotes.toString(),
                         style: TextStyle(fontFamily: "Abel"),
                       ),
                     ],
