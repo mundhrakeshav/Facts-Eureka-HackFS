@@ -5,5 +5,3 @@
 ### How it works?
 
 1. You need to SignUp and Login using email to use the app.
-
-![Login ScreenShot](./ScreenShots/Login.png)
