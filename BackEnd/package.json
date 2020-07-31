@@ -1,15 +1,35 @@
 {
-  "name": "facts",
+  "name": "facts_backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "tsc",
+    "start": "node build/app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git remote add origin https://github.com/mundhrakeshav/Facts-Eureka-HackFS.git"
+    "url": "git+https://github.com/mundhrakeshav/Facts-Eureka-HackFS.git"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mundhrakeshav/Facts-Eureka-HackFS/issues"
+  },
+  "homepage": "https://github.com/mundhrakeshav/Facts-Eureka-HackFS#readme",
+  "dependencies": {
+    "@textile/hub": "^0.3.3",
+    "@textile/threads-core": "^0.1.30",
+    "@types/express": "^4.17.7",
+    "axios": "^0.19.2",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "firebase": "^7.16.0",
+    "firebase-admin": "^8.13.0",
+    "isomorphic-ws": "^4.0.1",
+    "typescript": "^3.9.6",
+    "web3": "^1.2.9",
+    "ws": "^7.3.1"
+  }
 }
