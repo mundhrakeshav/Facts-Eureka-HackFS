@@ -6,7 +6,7 @@
 2.Switch to test directory.
 ```cd test```
 
-3.Install the modules using requirements file.
+3.Install the modules.
 ``` npm install --save mocha ganache-cli web3@1.0.0-beta.35```
 
 4.Test the Contract
