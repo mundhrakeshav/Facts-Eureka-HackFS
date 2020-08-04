@@ -302,6 +302,8 @@ contract FactCheck is ERC20 {
     uint256 public postCount;                       //Count of total posts
 
     address public assetContract;                   // Attached ERC20
+    event CreatedPost(address publisher,string ihash);
+    event CreatedThread(address publisher,uint postid,string ihash);
 
 
 
@@ -351,11 +353,13 @@ contract FactCheck is ERC20 {
        Fact memory post= Fact({publisher:publisher,ipfsHash:_ipfsHash,threadCount:0,donations:0,upvotes:0});
         //Fact(publisher, ipfsHash, threadCount, donation, upvotes, downvotes) and 2 mappings
         facts[postCount++]=post;
+        emit CreatedPost(publisher,_ipfsHash);
     }
 
     function createThread(uint256 postID, string memory _ipfsHash, address publisher) public {
         require(postID <= postCount);
         facts[postID].threads[facts[postID].threadCount++] = Thread({publisher:publisher,ipfsHash:_ipfsHash,donations:0,upvotes:0});    //adding thread to a post
+         emit CreatedThread(publisher,postID,_ipfsHash);
     }
 
 
