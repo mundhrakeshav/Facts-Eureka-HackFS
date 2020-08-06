@@ -179,27 +179,95 @@ function createEthereumAccount() {
         });
     });
 }
-function createPost(post) {
-    return __awaiter(this, void 0, void 0, function () {
-        var auth, client, resp;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    auth = {
-                        key: 'blyygdhgn5thkwyugov2g5gjxdu',
-                        secret: ''
-                    };
-                    return [4 /*yield*/, hub_1.Client.withKeyInfo(auth)];
-                case 1:
-                    client = _a.sent();
-                    return [4 /*yield*/, client.create(threadId, 'Posts', [post])];
-                case 2:
-                    resp = _a.sent();
-                    return [2 /*return*/, resp[0]];
-            }
-        });
+// async function createPost (post: any) {
+//     const auth: KeyInfo = {
+//       key: 'blyygdhgn5thkwyugov2g5gjxdu',
+//       secret: ''
+//     }
+//     const client = await Client.withKeyInfo(auth)
+//     const resp = await client.create(threadId, 'Posts', [post])
+//     return resp[0]
+//   }
+var setup = function () { return __awaiter(void 0, void 0, void 0, function () {
+    var identity, key, buckets, root, bucket, bucketKey, index, buf, path, resp;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, threads_core_1.Libp2pCryptoIdentity.fromString(config.libp2pkey)];
+            case 1:
+                identity = _a.sent();
+                key = {
+                    key: config.bucketKey,
+                    secret: ''
+                };
+                return [4 /*yield*/, hub_1.Buckets.withKeyInfo(key)
+                    // Authorize the user and your insecure keys with getToken
+                ];
+            case 2:
+                buckets = _a.sent();
+                // Authorize the user and your insecure keys with getToken
+                return [4 /*yield*/, buckets.getToken(identity)];
+            case 3:
+                // Authorize the user and your insecure keys with getToken
+                _a.sent();
+                return [4 /*yield*/, buckets.open('io.textile.dropzone')];
+            case 4:
+                root = _a.sent();
+                if (!root) {
+                    throw new Error('Failed to open bucket');
+                }
+                bucket = buckets;
+                bucketKey = root.key;
+                index = {
+                    author: identity.public.toString(),
+                    date: (new Date()).getTime(),
+                    paths: [],
+                };
+                buf = Buffer.from(JSON.stringify(index, null, 2));
+                path = "index.json";
+                return [4 /*yield*/, buckets.pushPath(bucketKey, path, buf)];
+            case 5:
+                resp = _a.sent();
+                console.log(resp);
+                return [2 /*return*/];
+        }
     });
-}
+}); };
+var createPost = function (post) { return __awaiter(void 0, void 0, void 0, function () {
+    var path, identity, key, buckets, root, bucket, bucketKey;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                path = '/ipfs/' + config.path;
+                return [4 /*yield*/, threads_core_1.Libp2pCryptoIdentity.fromString(config.libp2pkey)];
+            case 1:
+                identity = _a.sent();
+                key = {
+                    key: config.bucketKey,
+                    secret: ''
+                };
+                return [4 /*yield*/, hub_1.Buckets.withKeyInfo(key)];
+            case 2:
+                buckets = _a.sent();
+                return [4 /*yield*/, buckets.getToken(identity)];
+            case 3:
+                _a.sent();
+                return [4 /*yield*/, buckets.open('io.textile.dropzone')];
+            case 4:
+                root = _a.sent();
+                if (!root) {
+                    throw new Error('Failed to open bucket');
+                }
+                bucket = buckets;
+                bucketKey = root.key;
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        var binaryStr = post;
+                        buckets.pushPath(bucketKey, path, binaryStr).then(function (raw) {
+                            resolve(raw);
+                        });
+                    })];
+        }
+    });
+}); };
 function pushPostId(id, publisherAddress) {
     return __awaiter(this, void 0, void 0, function () {
         var response, postID, resp;
@@ -531,36 +599,52 @@ app.get('/getallposts', function (req, res) { return __awaiter(void 0, void 0, v
     }
     function getPostsData(ids, threads, upvotes, donations, addresses, postIndex) {
         return __awaiter(this, void 0, void 0, function () {
-            var auth, client, posts, x, resp;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var path, identity, key, buckets, root, bucket, bucketKey, posts, x, resp, _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
-                        auth = {
-                            key: 'blyygdhgn5thkwyugov2g5gjxdu',
+                        path = '/ipfs/' + config.path;
+                        return [4 /*yield*/, threads_core_1.Libp2pCryptoIdentity.fromString(config.libp2pkey)];
+                    case 1:
+                        identity = _c.sent();
+                        key = {
+                            key: config.bucketKey,
                             secret: ''
                         };
-                        return [4 /*yield*/, hub_1.Client.withKeyInfo(auth)];
-                    case 1:
-                        client = _a.sent();
+                        return [4 /*yield*/, hub_1.Buckets.withKeyInfo(key)];
+                    case 2:
+                        buckets = _c.sent();
+                        return [4 /*yield*/, buckets.getToken(identity)];
+                    case 3:
+                        _c.sent();
+                        return [4 /*yield*/, buckets.open('io.textile.dropzone')];
+                    case 4:
+                        root = _c.sent();
+                        if (!root) {
+                            throw new Error('Failed to open bucket');
+                        }
+                        bucket = buckets;
+                        bucketKey = root.key;
                         posts = new Array();
                         x = 0;
-                        _a.label = 2;
-                    case 2:
-                        if (!(x < ids.length)) return [3 /*break*/, 5];
-                        return [4 /*yield*/, client.findByID(threadId, 'Posts', ids[x])];
-                    case 3:
-                        resp = _a.sent();
+                        _c.label = 5;
+                    case 5:
+                        if (!(x < ids.length)) return [3 /*break*/, 8];
+                        _b = (_a = JSON).parse;
+                        return [4 /*yield*/, bucket.pullPath(ids[x], path).toString()];
+                    case 6:
+                        resp = _b.apply(_a, [_c.sent()]);
                         resp.instance['postId'] = postIndex[x];
                         resp.instance['threads'] = threads[x];
                         resp.instance['upvotes'] = upvotes[x];
                         resp.instance['donations'] = donations[x];
                         resp.instance['user'] = addresses[x];
                         posts.push(resp.instance);
-                        _a.label = 4;
-                    case 4:
+                        _c.label = 7;
+                    case 7:
                         x++;
-                        return [3 /*break*/, 2];
-                    case 5:
+                        return [3 /*break*/, 5];
+                    case 8:
                         res.send(posts);
                         return [2 /*return*/];
                 }
@@ -704,36 +788,52 @@ app.post('/upvotethread/:pid/:tid/:uid', function (req, res) { return __awaiter(
 app.get('/getallthreads/:pid', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     function getAllThreadsData(threadHash, threadIds, postIds, publisherAddr, donations, upvotes) {
         return __awaiter(this, void 0, void 0, function () {
-            var auth, client, threads, x, resp;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var path, identity, key, buckets, root, bucket, bucketKey, threads, x, resp, _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
-                        auth = {
-                            key: 'blyygdhgn5thkwyugov2g5gjxdu',
+                        path = '/ipfs/' + config.path;
+                        return [4 /*yield*/, threads_core_1.Libp2pCryptoIdentity.fromString(config.libp2pkey)];
+                    case 1:
+                        identity = _c.sent();
+                        key = {
+                            key: config.bucketKey,
                             secret: ''
                         };
-                        return [4 /*yield*/, hub_1.Client.withKeyInfo(auth)];
-                    case 1:
-                        client = _a.sent();
+                        return [4 /*yield*/, hub_1.Buckets.withKeyInfo(key)];
+                    case 2:
+                        buckets = _c.sent();
+                        return [4 /*yield*/, buckets.getToken(identity)];
+                    case 3:
+                        _c.sent();
+                        return [4 /*yield*/, buckets.open('io.textile.dropzone')];
+                    case 4:
+                        root = _c.sent();
+                        if (!root) {
+                            throw new Error('Failed to open bucket');
+                        }
+                        bucket = buckets;
+                        bucketKey = root.key;
                         threads = new Array();
                         x = 0;
-                        _a.label = 2;
-                    case 2:
-                        if (!(x < threadHash.length)) return [3 /*break*/, 5];
-                        return [4 /*yield*/, client.findByID(threadId, 'Posts', threadHash[x])];
-                    case 3:
-                        resp = _a.sent();
+                        _c.label = 5;
+                    case 5:
+                        if (!(x < threadHash.length)) return [3 /*break*/, 8];
+                        _b = (_a = JSON).parse;
+                        return [4 /*yield*/, bucket.pullPath(threadHash[x], path).toString()];
+                    case 6:
+                        resp = _b.apply(_a, [_c.sent()]);
                         resp.instance['postId'] = postIds[x];
                         resp.instance['threadId'] = threadIds[x];
                         resp.instance['upvotes'] = upvotes[x];
                         resp.instance['donations'] = donations[x];
                         resp.instance['publisher'] = publisherAddr[x];
                         threads.push(resp.instance);
-                        _a.label = 4;
-                    case 4:
+                        _c.label = 7;
+                    case 7:
                         x++;
-                        return [3 /*break*/, 2];
-                    case 5:
+                        return [3 /*break*/, 5];
+                    case 8:
                         res.send(threads);
                         return [2 /*return*/];
                 }
