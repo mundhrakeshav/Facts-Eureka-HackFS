@@ -1,6 +1,6 @@
 ;(global as any).WebSocket = require('isomorphic-ws')
 const config = require('../config.js')
-import { Client, KeyInfo, ThreadID, Buckets } from '@textile/hub'
+import { Client, KeyInfo, ThreadID, Buckets, PushPathResult } from '@textile/hub'
 import {Libp2pCryptoIdentity} from '@textile/threads-core';
 import express = require('express')
 const app: express.Application = express();
@@ -91,15 +91,69 @@ async function createEthereumAccount(){
 }
 
 
-async function createPost (post: any) {
-    const auth: KeyInfo = {
-      key: 'blyygdhgn5thkwyugov2g5gjxdu',
+// async function createPost (post: any) {
+//     const auth: KeyInfo = {
+//       key: 'blyygdhgn5thkwyugov2g5gjxdu',
+//       secret: ''
+//     }
+//     const client = await Client.withKeyInfo(auth)
+//     const resp = await client.create(threadId, 'Posts', [post])
+//     return resp[0]
+//   }
+
+const setup = async () => {
+    const identity = await Libp2pCryptoIdentity.fromString(config.libp2pkey)
+    const key: KeyInfo = {
+      key: config.bucketKey,
       secret: ''
+      }
+    // Use the insecure key to setup a new session
+    const buckets = await Buckets.withKeyInfo(key)
+    // Authorize the user and your insecure keys with getToken
+    await buckets.getToken(identity) 
+  
+     const root = await buckets.open('io.textile.dropzone')
+     if (!root) {
+       throw new Error('Failed to open bucket')
+     }
+     const bucket = buckets
+     const bucketKey = root.key
+  
+     const index = {
+      author: identity.public.toString(),
+      date: (new Date()).getTime(),
+      paths: [],
     }
-    const client = await Client.withKeyInfo(auth)
-    const resp = await client.create(threadId, 'Posts', [post])
-    return resp[0]
-  }
+    // Store the index in the Bucket (or in the Thread later)
+    const buf = Buffer.from(JSON.stringify(index, null, 2))
+    const path = `index.json`
+    const resp = await buckets.pushPath(bucketKey, path, buf)
+    console.log(resp)
+   }
+
+   const createPost = async(post: any) : Promise<PushPathResult> => {
+       const path = '/ipfs/'+config.path;
+       const identity = await Libp2pCryptoIdentity.fromString(config.libp2pkey);
+       const key: KeyInfo = {
+           key: config.bucketKey,
+           secret: ''
+       }
+       const buckets = await Buckets.withKeyInfo(key)
+       await buckets.getToken(identity);
+
+       const root = await buckets.open('io.textile.dropzone')
+       if(!root){
+           throw new Error('Failed to open bucket')
+       }
+       const bucket = buckets
+       const bucketKey = root.key
+       return new Promise((resolve, reject) => {
+           const binaryStr = post
+           buckets.pushPath(bucketKey, path, binaryStr).then((raw) => {
+               resolve(raw)
+           })
+       })
+   }
 
 async function pushPostId(id: any, publisherAddress: any) {
     const response = await scInstance.post('/createPost', {
@@ -290,14 +344,24 @@ app.get('/getallposts', async(req, res) => {
     }
     
     async function getPostsData(ids: any, threads: any, upvotes: any, donations: any, addresses: any, postIndex: any){
-        const auth: KeyInfo = {
-            key: 'blyygdhgn5thkwyugov2g5gjxdu',
-            secret: ''
-          }
-        const client = await Client.withKeyInfo(auth)
+        const path = '/ipfs/'+config.path;
+       const identity = await Libp2pCryptoIdentity.fromString(config.libp2pkey);
+       const key: KeyInfo = {
+           key: config.bucketKey,
+           secret: ''
+       }
+       const buckets = await Buckets.withKeyInfo(key)
+       await buckets.getToken(identity);
+
+       const root = await buckets.open('io.textile.dropzone')
+       if(!root){
+           throw new Error('Failed to open bucket')
+       }
+       const bucket = buckets
+       const bucketKey = root.key
         let posts = new Array()
         for(let x = 0; x<ids.length; x++){
-            let resp = await client.findByID(threadId, 'Posts', ids[x])
+            let resp = JSON.parse(await bucket.pullPath(ids[x], path).toString())
             resp.instance['postId'] = postIndex[x]
             resp.instance['threads'] = threads[x]
             resp.instance['upvotes'] = upvotes[x]
@@ -405,14 +469,24 @@ app.get('/getallthreads/:pid', async(req, res) => {
     getAllThreadsData(threadHash,threadIds, postIds, publisherAddresses,donations,upvotes)
 
     async function getAllThreadsData(threadHash: any, threadIds: any, postIds: any, publisherAddr: any, donations: any, upvotes: any){
-        const auth: KeyInfo = {
-            key: 'blyygdhgn5thkwyugov2g5gjxdu',
-            secret: ''
-          }
-        const client = await Client.withKeyInfo(auth)
+        const path = '/ipfs/'+config.path;
+       const identity = await Libp2pCryptoIdentity.fromString(config.libp2pkey);
+       const key: KeyInfo = {
+           key: config.bucketKey,
+           secret: ''
+       }
+       const buckets = await Buckets.withKeyInfo(key)
+       await buckets.getToken(identity);
+
+       const root = await buckets.open('io.textile.dropzone')
+       if(!root){
+           throw new Error('Failed to open bucket')
+       }
+       const bucket = buckets
+       const bucketKey = root.key
         let threads = new Array()
         for(let x = 0; x<threadHash.length; x++){
-            let resp = await client.findByID(threadId, 'Posts', threadHash[x])
+            let resp = JSON.parse(await bucket.pullPath(threadHash[x], path).toString())
             resp.instance['postId'] = postIds[x]
             resp.instance['threadId'] = threadIds[x]
             resp.instance['upvotes'] = upvotes[x]
